@@ -20,21 +20,30 @@ app.post("/generate", async (req, res) => {
   console.log(`>>> [開始] リクエストを受信しました: "${prompt}"`);
 
   try {
-    // 修正：404を回避するため、あなたの環境で有効な最新モデルを指定
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    // --- ここからプロンプトの加工 ---
+    const richPrompt = `
+      ${prompt} についての旅行プランを作成してください。
+      
+      【重要ルール】
+      回答の最後に、ルートを生成するために訪問する具体的な地点名（観光地名や駅名）を
+      必ず以下の形式で一行で記述してください。
+      記述例： Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
+    `;
+    // ------------------------------
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
     
-    // 生成実行
-    const result = await model.generateContent(prompt);
+    // 加工した richPrompt を渡す
+    const result = await model.generateContent(richPrompt);
     
     console.log(">>> [解析中] AIからの応答を解析しています...");
-    const response = await result.response; // awaitを確実に入れる
+    const response = await result.response;
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
     res.json({ plan: text });
-
   } catch (err) {
     console.error("--- [エラー発生] ---");
     console.error("Status:", err.status);
