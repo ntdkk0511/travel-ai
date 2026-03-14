@@ -12,6 +12,6 @@ router.post("/register",UserController.createUser)
 
 
 // 最新の体重の取得 param(url) get 先頭の/を忘れない
-router.get("/latest/:id",UserController.createUser);
+router.get("/latest/:id",UserController.getUserById);
 
 export default router;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function RegisterForm() {
+export default function RegisterForm({ onRegisterSuccess }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,6 +13,7 @@ export default function RegisterForm() {
                 name, email, password
             });
             console.log(response.data);
+            onRegisterSuccess?.();
         } catch (error) {
             console.error(error.response.data);
         }
