@@ -1,6 +1,6 @@
 // controller -> service -> model
 const path = require("path");
-
+const jwt = require("jsonwebtoken");
 const UserModel = require("../models/UserModel");
 // serviceがファイルを決める test用にしている。
 
@@ -16,8 +16,15 @@ class AuthService{
             return null;
         }
         console.log("ok");
+        const secretKey = "my_secret_key"; // 本番では環境変数にする
+        const token = jwt.sign(
+        { id: user.id, email: user.email }, // payload（必要最小限）
+        secretKey,
+        { expiresIn: "1h" }                // 有効期限 1時間
+        );
+
         return {
-            token: "abc123",
+            token: token,
             user: user
         };
     }
