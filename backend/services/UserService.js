@@ -1,7 +1,11 @@
 // controller -> service -> model
-const path = require("path");
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const UserModel = require("../models/UserModel");
+import UserModel from "../models/UserModel.js";
 // serviceがファイルを決める test用にしている。
 class UserService{
     // 新規作成
@@ -15,4 +19,4 @@ class UserService{
     }
 
 }
-module.exports = UserService;
+export default UserService;

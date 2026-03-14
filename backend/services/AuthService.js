@@ -1,7 +1,6 @@
 // controller -> service -> model
-const path = require("path");
-const jwt = require("jsonwebtoken");
-const UserModel = require("../models/UserModel");
+import jwt from "jsonwebtoken";
+import UserModel from "../models/UserModel.js";
 // serviceがファイルを決める test用にしている。
 
 class AuthService{
@@ -29,4 +28,4 @@ class AuthService{
         };
     }
 }
-module.exports = AuthService;
+export default AuthService;

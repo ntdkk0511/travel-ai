@@ -1,9 +1,14 @@
 // test jestを使っている。
 
-const fs = require("fs");
-const path = require("path");
+import { test, expect, beforeEach, afterAll } from "@jest/globals";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const UserModel = require("../models/UserModel");
+import UserModel from "../models/UserModel.js";
 const testDataFile = path.join(__dirname,"../data/users.json");
 
 // testように変更する
@@ -21,7 +26,7 @@ afterAll(()=>{
 // 名前と行う関数
 // 作成とjson
 test("createUser should return a user with id,name,email",()=>{
-    const user = UserModel.createUser("alice","ai.gmail.com","1234",file = testDataFile);
+    const user = UserModel.createUser("alice","ai.gmail.com","1234",testDataFile);
     //うまく作れているのかの確認
     expect(user).toHaveProperty("id");
     expect(user.name).toBe("alice");
@@ -34,14 +39,14 @@ test("createUser should return a user with id,name,email",()=>{
 });
 // by idのテスト
 test("get_user_by_id",()=>{
-    const user = UserModel.createUser("ai","ai.gmail.com","1234",file=testDataFile);
+    const user = UserModel.createUser("ai","ai.gmail.com","1234",testDataFile);
     const found = UserModel.getUserById(user.id,testDataFile);
     expect(user.password).toBe(found.password);
 
 })
 // by emailのテスト
 test("get_user_by_email",()=>{
-    const user = UserModel.createUser("ai","ai.gmail.com","1234",file=testDataFile);
+    const user = UserModel.createUser("ai","ai.gmail.com","1234",testDataFile);
     const found = UserModel.getUserByEmail("ai.gmail.com",testDataFile);
     expect(user.password).toBe(found.password);
 

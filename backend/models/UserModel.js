@@ -2,11 +2,15 @@
 // 最初は　userから作る　plan と weight はuserIdで紐づくから
 
 // uuidがいる
-const {v4 :uuidv4} = require("uuid");
+import { v4 as uuidv4 } from "uuid";
 
 // getalluserの準備　ファイルの読み取り
-const fs = require("fs") //ファイルの読み取り
-const path = require("path") //
+import fs from "fs"; //ファイルの読み取り
+import path from "path"; //
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 
 const dataFile = path.join(__dirname,"../data/user.json"); //__dirname はこのファイルの場所 ..は一つ上
@@ -61,5 +65,4 @@ class UserModel{ // フォイルを指定する
     }
 
 }
-module.exports = UserModel; //エキスポートする
-
+export default UserModel;

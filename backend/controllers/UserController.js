@@ -2,9 +2,7 @@
 // ここでサービスやDBを呼び出して、レスポンスを返す。
 // routine -> controller -> service
 
-const express = require("express");
-const router = express.Router();
-const UserService = require("../services/UserService");
+import UserService from "../services/UserService.js";
 
 class UserController{
     //登録用
@@ -28,13 +26,4 @@ class UserController{
     }
 }
 
-module.exports = UserController;
-
-// url の確認用
-exports.createUser = (req, res) => {
-  // 仮で body をそのまま返す
-  res.json({
-    message: "createUser OK",
-    data: req.body
-  });
-};
+export default UserController;
