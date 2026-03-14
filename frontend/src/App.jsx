@@ -1,19 +1,28 @@
 import { useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { GoogleMap, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css'; // main css
+import 'react-date-range/dist/theme/default.css'; // theme css
+import { addDays } from 'date-fns';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-// 地図の大きさ設定
 const containerStyle = { width: '100%', height: '400px', marginTop: '20px', borderRadius: '10px' };
 const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
-  const [plan, setPlan] = useState("");            // プラン入力
-  const [time, setTime] = useState("");            // 出発時間
-  const [stayType, setStayType] = useState("日帰り"); // 日帰り/宿泊
-  const [dateRange, setDateRange] = useState({ start: "", end: "" }); // 出発日〜最終日
-  const [result, setResult] = useState("");        // AI結果
+  const [plan, setPlan] = useState("");             
+  const [time, setTime] = useState("");             
+  const [stayType, setStayType] = useState("日帰り"); 
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
+  const [result, setResult] = useState("");        
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +51,12 @@ export default function App() {
   }, [isLoaded]);
 
   const generatePlan = async () => {
-    if (!plan || !time || !dateRange.start || (stayType === "宿泊" && !dateRange.end)) {
+    const startDate = dateRange[0].startDate.toISOString().split('T')[0];
+    const endDate = stayType === "日帰り" 
+      ? startDate 
+      : dateRange[0].endDate.toISOString().split('T')[0];
+
+    if (!plan || !time || !startDate || (stayType === "宿泊" && !endDate)) {
       alert("プラン・日付・時間を入力してください");
       return;
     }
@@ -51,10 +65,6 @@ export default function App() {
       setLoading(true);
       setDirections(null);
       setResult("");
-
-      // 日帰りなら終了日は出発日と同じ
-      const startDate = dateRange.start;
-      const endDate = stayType === "日帰り" ? dateRange.start : dateRange.end;
 
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
@@ -94,34 +104,32 @@ export default function App() {
 
         <select
           value={stayType}
-          onChange={(e) => setStayType(e.target.value)}
+          onChange={(e) => {
+            setStayType(e.target.value);
+            if (e.target.value === "日帰り") {
+              setDateRange([{ ...dateRange[0], endDate: dateRange[0].startDate }]);
+            }
+          }}
           style={{ flex: "0 0 120px", padding: "10px" }}
         >
           <option value="日帰り">日帰り</option>
           <option value="宿泊">宿泊</option>
         </select>
-
-        {/* 範囲選択用カレンダー */}
-        <input
-          type="date"
-          value={dateRange.start}
-          onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value, end: stayType === "日帰り" ? e.target.value : prev.end }))}
-          style={{ flex: "0 0 150px", padding: "10px" }}
-        />
-        {stayType === "宿泊" && (
-          <input
-            type="date"
-            value={dateRange.end}
-            min={dateRange.start}
-            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-            style={{ flex: "0 0 150px", padding: "10px" }}
-          />
-        )}
-
-        <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
-          {loading ? "生成中..." : "プラン生成"}
-        </button>
       </div>
+
+      {/* 範囲選択カレンダー */}
+      <DateRange
+        editableDateInputs={true}
+        onChange={item => setDateRange([item.selection])}
+        moveRangeOnFirstSelection={false}
+        ranges={dateRange}
+        minDate={new Date()}
+        maxDate={addDays(new Date(), 365)}
+      />
+
+      <button onClick={generatePlan} disabled={loading} style={{ marginTop: "10px", padding: "10px 20px" }}>
+        {loading ? "生成中..." : "プラン生成"}
+      </button>
 
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>

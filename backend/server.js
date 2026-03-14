@@ -9,7 +9,7 @@ const app = express();
 
 // CORS設定
 app.use(cors({
-  origin: "http://localhost:5173", // React側のURL
+  origin: "http://localhost:5173", // React側URL
   methods: ["POST", "GET"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -19,7 +19,7 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  // React側から送信されるデータを取得
+  // フロントからのデータ
   const { prompt, startDate, endDate, time, stayType } = req.body;
 
   console.log(">>> [開始] リクエストを受信しました");
@@ -32,7 +32,7 @@ app.post("/generate", async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // 日帰りなら終了日も出発日と同じに
+    // 日帰りなら終了日も開始日と同じ
     const finalEndDate = stayType === "日帰り" ? startDate : endDate;
 
     // プロンプト作成
@@ -74,7 +74,7 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
     console.error("Message:", err.message);
 
     if (err.status === 404) {
-      return res.status(404).json({ error: "指定したモデルが見つかりません。モデル名を更新してください。" });
+      return res.status(404).json({ error: "指定したモデルが見つかりません。" });
     }
 
     if (err.message && err.message.includes("429")) {
