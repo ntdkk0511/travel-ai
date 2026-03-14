@@ -6,6 +6,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 dotenv.config();
 
 const app = express();
+
+// CORS設定
 app.use(cors({
   origin: "http://localhost:5173", // React側のURL
   methods: ["POST", "GET"],
@@ -13,13 +15,14 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  // React側から送信されるデータ
+  // React側から送信されるデータを取得
   const { prompt, startDate, endDate, time, stayType } = req.body;
 
-  console.log(`>>> [開始] リクエストを受信しました`);
+  console.log(">>> [開始] リクエストを受信しました");
   console.log(`場所: ${prompt}`);
   console.log(`出発時間: ${time}`);
   console.log(`旅行タイプ: ${stayType}`);
@@ -29,12 +32,15 @@ app.post("/generate", async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // プロンプトに日付・時間・宿泊タイプを組み込み
+    // 日帰りなら終了日も出発日と同じに
+    const finalEndDate = stayType === "日帰り" ? startDate : endDate;
+
+    // プロンプト作成
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
 旅行開始日時（出発日・時間）: ${startDate} ${time}
-旅行終了日（宿泊の場合）: ${stayType === "宿泊" ? endDate : startDate}
+旅行終了日（宿泊の場合）: ${finalEndDate}
 旅行タイプ: ${stayType}
 
 【条件】
@@ -79,6 +85,7 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
   }
 });
 
+// サーバー起動
 app.listen(3000, () => {
   console.log("-----------------------------------------");
   console.log("Server running on http://localhost:3000");
