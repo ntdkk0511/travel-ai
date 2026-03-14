@@ -6,26 +6,22 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 // 地図の大きさ設定
 const containerStyle = { width: '100%', height: '400px', marginTop: '20px', borderRadius: '10px' };
-// 初期表示の中心（京都駅付近）
 const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
-  const [plan, setPlan] = useState("");           // プランのテキスト入力
-  const [time, setTime] = useState("");           // 出発時間
+  const [plan, setPlan] = useState("");            // プラン入力
+  const [time, setTime] = useState("");            // 出発時間
   const [stayType, setStayType] = useState("日帰り"); // 日帰り/宿泊
-  const [startDate, setStartDate] = useState(""); // 出発日 / チェックイン日
-  const [endDate, setEndDate] = useState("");     // 宿泊の場合のチェックアウト日
-  const [result, setResult] = useState("");       // AIからの結果
+  const [dateRange, setDateRange] = useState({ start: "", end: "" }); // 出発日〜最終日
+  const [result, setResult] = useState("");        // AI結果
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Google Mapsのロード
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ['places']
   });
 
-  // AIの回答から Locations を抽出してルート計算
   const calculateRoute = useCallback((text) => {
     if (!isLoaded) return;
     const match = text.match(/Locations:\s*\[(.*?)\]/);
@@ -34,24 +30,20 @@ export default function App() {
     if (locations.length < 2) return;
 
     const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: locations[0],
-        destination: locations[locations.length - 1],
-        waypoints: locations.slice(1, -1).map(loc => ({ location: loc, stopover: true })),
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === 'OK') setDirections(result);
-        else console.error("ルート検索に失敗しました:", status);
-      }
-    );
+    directionsService.route({
+      origin: locations[0],
+      destination: locations[locations.length - 1],
+      waypoints: locations.slice(1, -1).map(loc => ({ location: loc, stopover: true })),
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    }, (result, status) => {
+      if (status === 'OK') setDirections(result);
+      else console.error("ルート検索に失敗しました:", status);
+    });
   }, [isLoaded]);
 
-  // プラン生成ボタン
   const generatePlan = async () => {
-    if (!plan || !time || !startDate || (stayType === "宿泊" && !endDate)) {
-      alert("場所・日付・時間を入力してください");
+    if (!plan || !time || !dateRange.start || (stayType === "宿泊" && !dateRange.end)) {
+      alert("プラン・日付・時間を入力してください");
       return;
     }
 
@@ -60,19 +52,14 @@ export default function App() {
       setDirections(null);
       setResult("");
 
-      // 日帰りなら endDate は startDate に合わせる
-      const finalEndDate = stayType === "日帰り" ? startDate : endDate;
+      // 日帰りなら終了日は出発日と同じ
+      const startDate = dateRange.start;
+      const endDate = stayType === "日帰り" ? dateRange.start : dateRange.end;
 
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: plan,
-          startDate,
-          endDate: finalEndDate,
-          time,
-          stayType
-        })
+        body: JSON.stringify({ prompt: plan, startDate, endDate, time, stayType })
       });
 
       const data = await res.json();
@@ -91,7 +78,6 @@ export default function App() {
       <h1>AI旅行プランナー 🗺️</h1>
 
       <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {/* プラン入力 */}
         <input
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
@@ -99,7 +85,6 @@ export default function App() {
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
 
-        {/* 出発時間 */}
         <input
           type="time"
           value={time}
@@ -107,7 +92,6 @@ export default function App() {
           style={{ flex: "0 0 120px", padding: "10px" }}
         />
 
-        {/* 日帰り／宿泊選択 */}
         <select
           value={stayType}
           onChange={(e) => setStayType(e.target.value)}
@@ -117,21 +101,19 @@ export default function App() {
           <option value="宿泊">宿泊</option>
         </select>
 
-        {/* 出発日（チェックイン日） */}
+        {/* 範囲選択用カレンダー */}
         <input
           type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          value={dateRange.start}
+          onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value, end: stayType === "日帰り" ? e.target.value : prev.end }))}
           style={{ flex: "0 0 150px", padding: "10px" }}
         />
-
-        {/* 宿泊の場合のみチェックアウト日 */}
         {stayType === "宿泊" && (
           <input
             type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            min={startDate}
+            value={dateRange.end}
+            min={dateRange.start}
+            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
             style={{ flex: "0 0 150px", padding: "10px" }}
           />
         )}
@@ -141,7 +123,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* 地図表示 */}
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
@@ -151,8 +132,6 @@ export default function App() {
       )}
 
       <hr />
-
-      {/* AI結果表示 */}
       <div style={{ marginTop: "20px" }}>
         <ReactMarkdown>{result}</ReactMarkdown>
       </div>
