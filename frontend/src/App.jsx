@@ -10,8 +10,10 @@ const containerStyle = { width: '100%', height: '400px', marginTop: '20px', bord
 const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
-  const [plan, setPlan] = useState("");
-  const [result, setResult] = useState("");
+  const [plan, setPlan] = useState("");       // プランのテキスト入力
+  const [date, setDate] = useState("");       // 日付入力
+  const [time, setTime] = useState("");       // 時間入力
+  const [result, setResult] = useState("");   // AIからの結果
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,11 +23,10 @@ export default function App() {
     libraries: ['places']
   });
 
-  // AIの回答から [地点, 地点] を抜き出してルートを計算する関数
+  // AIの回答から Locations を抽出してルート計算
   const calculateRoute = useCallback((text) => {
     if (!isLoaded) return;
 
-    // AIの回答から Locations: [...] の部分を探す
     const match = text.match(/Locations:\s*\[(.*?)\]/);
     if (!match) return;
 
@@ -34,13 +35,12 @@ export default function App() {
 
     const directionsService = new window.google.maps.DirectionsService();
     
-    // ルート検索の実行
     directionsService.route(
       {
-        origin: locations[0], // 出発地
-        destination: locations[locations.length - 1], // 目的地
-        waypoints: locations.slice(1, -1).map(loc => ({ location: loc, stopover: true })), // 経由地
-        travelMode: window.google.maps.TravelMode.DRIVING, // 車移動（徒歩ならWALKING）
+        origin: locations[0],
+        destination: locations[locations.length - 1],
+        waypoints: locations.slice(1, -1).map(loc => ({ location: loc, stopover: true })),
+        travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
         if (status === 'OK') {
@@ -52,21 +52,29 @@ export default function App() {
     );
   }, [isLoaded]);
 
+  // プラン生成ボタン
   const generatePlan = async () => {
+    if (!plan || !date || !time) {
+      alert("場所・日付・時間を入力してください");
+      return;
+    }
+
     try {
       setLoading(true);
-      setDirections(null); // 地図をリセット
+      setDirections(null);
+      setResult("");
+
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: plan })
+        body: JSON.stringify({ prompt: plan, date, time })
       });
       const data = await res.json();
       setResult(data.plan);
-      
-      // AIの回答が届いたらルートを計算
+
       calculateRoute(data.plan);
     } catch (error) {
+      console.error(error);
       setResult("エラーが発生しました。");
     } finally {
       setLoading(false);
@@ -76,19 +84,38 @@ export default function App() {
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
       <h1>AI旅行プランナー 🗺️</h1>
-      <div style={{ marginBottom: "20px" }}>
+
+      <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+        {/* 場所入力 */}
         <input
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
           placeholder="例：京都1日旅"
-          style={{ width: "70%", padding: "10px" }}
+          style={{ flex: "1 1 200px", padding: "10px" }}
         />
-        <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px", marginLeft: "10px" }}>
+
+        {/* 日付入力 */}
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          style={{ flex: "0 0 150px", padding: "10px" }}
+        />
+
+        {/* 時間入力 */}
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          style={{ flex: "0 0 120px", padding: "10px" }}
+        />
+
+        <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? "生成中..." : "プラン生成"}
         </button>
       </div>
 
-      {/* 地図の表示エリア */}
+      {/* 地図表示 */}
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
@@ -98,6 +125,8 @@ export default function App() {
       )}
 
       <hr />
+
+      {/* AI結果表示 */}
       <div style={{ marginTop: "20px" }}>
         <ReactMarkdown>{result}</ReactMarkdown>
       </div>
