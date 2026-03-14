@@ -5,7 +5,7 @@ const path = require("path");
 
 const AuthService = require("../services/AuthService");
 const UserService = require("../services/UserService");
-const AuthController = require("../controllers/AuthController");
+const AuthController = require("../controllers/authController");
 const UserModel = require("../models/UserModel");
 const testDataFile = path.join(__dirname,"../data/user.json");
 

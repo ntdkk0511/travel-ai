@@ -9,7 +9,7 @@ const fs = require("fs") //ファイルの読み取り
 const path = require("path") //
 
 
-const dataFile = path.join(__dirname,"../data/users.json"); //__dirname はこのファイルの場所 ..は一つ上
+const dataFile = path.join(__dirname,"../data/user.json"); //__dirname はこのファイルの場所 ..は一つ上
 
 
 class UserModel{ // フォイルを指定する
@@ -44,18 +44,19 @@ class UserModel{ // フォイルを指定する
     // モデルを作らないくても　呼び出せる static
     static createUser(name,email,password,file = dataFile){
         const id = uuidv4();
-        const user = new UserModel(id,name,email,file,password);
+        const user = new UserModel(id,name,email,password,file);
         user.save(file);
         return user;
     }
     // 対象になるファイルを明言する
     static getUserById(id,file = dataFile){
-        users = UserModel.getAllUsers(file);
+        const users = UserModel.getAllUsers(file);
         return users.find(user => user.id === id); //id と同じuserを{}で取ってくる
     }
     // ログイン用
     static getUserByEmail(email,file=dataFile){
-        users = UserModel.getAllUsers(file);
+        const users = UserModel.getAllUsers(file);
+        console.log("all users:", users);
         return users.find(user=> user.email === email);
     }
 
