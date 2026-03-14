@@ -28,15 +28,12 @@ export default function App() {
   // AIの回答から Locations を抽出してルート計算
   const calculateRoute = useCallback((text) => {
     if (!isLoaded) return;
-
     const match = text.match(/Locations:\s*\[(.*?)\]/);
     if (!match) return;
-
     const locations = match[1].split(',').map(s => s.trim());
     if (locations.length < 2) return;
 
     const directionsService = new window.google.maps.DirectionsService();
-    
     directionsService.route(
       {
         origin: locations[0],
@@ -45,11 +42,8 @@ export default function App() {
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
-        if (status === 'OK') {
-          setDirections(result);
-        } else {
-          console.error("ルート検索に失敗しました:", status);
-        }
+        if (status === 'OK') setDirections(result);
+        else console.error("ルート検索に失敗しました:", status);
       }
     );
   }, [isLoaded]);
@@ -83,7 +77,6 @@ export default function App() {
 
       const data = await res.json();
       setResult(data.plan);
-
       calculateRoute(data.plan);
     } catch (error) {
       console.error(error);
@@ -98,7 +91,7 @@ export default function App() {
       <h1>AI旅行プランナー 🗺️</h1>
 
       <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {/* 場所入力 */}
+        {/* プラン入力 */}
         <input
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
@@ -124,7 +117,7 @@ export default function App() {
           <option value="宿泊">宿泊</option>
         </select>
 
-        {/* 出発日 */}
+        {/* 出発日（チェックイン日） */}
         <input
           type="date"
           value={startDate}
