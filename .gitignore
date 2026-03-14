@@ -10,3 +10,6 @@ frontend/node_modules/
 
 # frontendのビルド成果物
 frontend/dist/
+
+#環境設定
+.env

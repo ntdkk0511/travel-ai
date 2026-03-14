@@ -12,7 +12,6 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-
 export default function App() {
   const [plan, setPlan] = useState("");
   const [startLocation, setStartLocation] = useState("");
@@ -40,6 +39,7 @@ export default function App() {
     if (locations.length < 2) return;
 
     const directionsService = new window.google.maps.DirectionsService();
+
 
     directionsService.route(
       {
