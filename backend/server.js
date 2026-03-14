@@ -19,7 +19,6 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  // フロントからのデータ
   const { prompt, startDate, endDate, time, stayType } = req.body;
 
   console.log(">>> [開始] リクエストを受信しました");
@@ -35,7 +34,6 @@ app.post("/generate", async (req, res) => {
     // 日帰りなら終了日も開始日と同じ
     const finalEndDate = stayType === "日帰り" ? startDate : endDate;
 
-    // プロンプト作成
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
@@ -58,10 +56,7 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
     `;
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
-
     const result = await model.generateContent(richPrompt);
-
-    console.log(">>> [解析中] AIからの応答を解析しています...");
     const response = await result.response;
     const text = response.text();
 
@@ -73,19 +68,13 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
     console.error("Status:", err.status);
     console.error("Message:", err.message);
 
-    if (err.status === 404) {
-      return res.status(404).json({ error: "指定したモデルが見つかりません。" });
-    }
-
-    if (err.message && err.message.includes("429")) {
-      return res.status(429).json({ error: "制限を超えました。少し待ってください。" });
-    }
+    if (err.status === 404) return res.status(404).json({ error: "指定したモデルが見つかりません。" });
+    if (err.message && err.message.includes("429")) return res.status(429).json({ error: "制限を超えました。少し待ってください。" });
 
     res.status(500).json({ error: "サーバー内部エラー" });
   }
 });
 
-// サーバー起動
 app.listen(3000, () => {
   console.log("-----------------------------------------");
   console.log("Server running on http://localhost:3000");
