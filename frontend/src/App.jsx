@@ -31,7 +31,6 @@ export default function App() {
     if (locations.length < 2) return;
 
     const directionsService = new window.google.maps.DirectionsService();
-<<<<<<< HEAD
 
     // ルート検索の実行
     directionsService.route(
