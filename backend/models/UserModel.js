@@ -12,7 +12,7 @@ const path = require("path") //
 const dataFile = path.join(__dirname,"../data/users.json"); //__dirname はこのファイルの場所 ..は一つ上
 
 
-class UserModel{ // フォイルを指定する 性別もあった方がいい 年齢と身長も追加しないといけない。
+class UserModel{ // フォイルを指定する 
     constructor(id,name,email,password){
         this.id = id;
         this.name = name;

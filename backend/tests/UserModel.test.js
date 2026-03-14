@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const UserModel = require("../models/UserModel");
-const testDataFile = path.join(__dirname,"../data/users.test.json");
+const testDataFile = path.join(__dirname,"../data/users.json");
 
 // testように変更する
 // UserModel.dataFile = testDataFile;
@@ -36,6 +36,6 @@ test("createUser should return a user with id,name,email",()=>{
 test("get_user_by_id",()=>{
     const user = UserModel.createUser("ai","ai.gmail.com","1234",file=testDataFile);
     const found = UserModel.getUserById(user.id,testDataFile);
-    expect(user.name).toBe(found.name);
+    expect(user.password).toBe(found.password);
 
 })
