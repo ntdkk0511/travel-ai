@@ -10,7 +10,7 @@ const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
   const [plan, setPlan] = useState("");
-  const [startLocation, setStartLocation] = useState(""); // 追加
+  const [startLocation, setStartLocation] = useState("");
   const [time, setTime] = useState("");
   const [stayType, setStayType] = useState("日帰り");
   const [startDate, setStartDate] = useState(new Date());
@@ -46,8 +46,13 @@ export default function App() {
 
   // プラン生成
   const generatePlan = async () => {
-    if (!plan || !time || !startDate || !startLocation) {
-      alert("プラン・出発場所・出発日・時間を入力してください");
+    if (!plan || !stayType || !startDate) {
+      alert("旅行内容・日付・日帰り/宿泊を入力してください");
+      return;
+    }
+
+    if (stayType === "宿泊" && (!nights || nights < 1)) {
+      alert("宿泊日数は1以上で入力してください");
       return;
     }
 
@@ -56,26 +61,30 @@ export default function App() {
     setResult("");
 
     const start = startDate.toISOString().split('T')[0];
-    const end = stayType === "日帰り"
-      ? start
-      : addDays(startDate, nights).toISOString().split('T')[0]; // 宿泊日数分加算
 
     try {
+      const bodyData = {
+        prompt: plan,
+        startDate: start,
+        stayType,
+      };
+      if (stayType === "宿泊") bodyData.nights = nights;
+      if (startLocation) bodyData.startLocation = startLocation;
+      if (time) bodyData.time = time;
+
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: plan,
-          startDate: start,
-          stayType,
-          nights,
-          time,
-          startLocation // 送信
-        })
+        body: JSON.stringify(bodyData)
       });
+
       const data = await res.json();
-      setResult(data.plan);
-      calculateRoute(data.plan);
+      if (res.ok) {
+        setResult(data.plan);
+        calculateRoute(data.plan);
+      } else {
+        setResult(data.error || "エラーが発生しました");
+      }
     } catch (err) {
       console.error(err);
       setResult("エラーが発生しました。");
@@ -89,7 +98,7 @@ export default function App() {
       <h1>AI旅行プランナー 🗺️</h1>
 
       <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {/* 旅行内容 */}
+        {/* 旅行内容（必須） */}
         <input
           value={plan}
           onChange={e => setPlan(e.target.value)}
@@ -97,17 +106,17 @@ export default function App() {
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
 
-        {/* 出発場所 */}
+        {/* 出発場所（任意） */}
         <input
           value={startLocation}
           onChange={e => setStartLocation(e.target.value)}
-          placeholder="出発場所"
+          placeholder="出発場所（任意）"
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
 
-        {/* 出発時間 */}
+        {/* 出発時間（任意） */}
         <div style={{ display: "flex", flexDirection: "column", flex: "0 0 120px" }}>
-          <label style={{ fontSize: "12px", marginBottom: "2px" }}>出発時間</label>
+          <label style={{ fontSize: "12px", marginBottom: "2px" }}>出発時間（任意）</label>
           <input
             type="time"
             value={time}
@@ -116,7 +125,7 @@ export default function App() {
           />
         </div>
 
-        {/* 日帰り / 宿泊 */}
+        {/* 日帰り / 宿泊（必須） */}
         <select
           value={stayType}
           onChange={e => setStayType(e.target.value)}
@@ -126,7 +135,7 @@ export default function App() {
           <option value="宿泊">宿泊</option>
         </select>
 
-        {/* 出発日 */}
+        {/* 出発日（必須） */}
         <input
           type="date"
           value={startDate.toISOString().split('T')[0]}
@@ -135,7 +144,7 @@ export default function App() {
           style={{ flex: "0 0 150px", padding: "10px" }}
         />
 
-        {/* 宿泊日数 */}
+        {/* 宿泊日数（宿泊の場合のみ必須） */}
         {stayType === "宿泊" && (
           <input
             type="number"

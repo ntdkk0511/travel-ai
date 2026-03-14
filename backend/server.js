@@ -10,7 +10,7 @@ const app = express();
 
 // CORS設定
 app.use(cors({
-  origin: "http://localhost:5173", // React側URL
+  origin: "http://localhost:5173",
   methods: ["POST", "GET"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -22,44 +22,45 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.post("/generate", async (req, res) => {
   const { prompt, startDate, stayType, nights = 0, time, startLocation } = req.body;
 
+  // 必須チェック
+  if (!startDate || !stayType) {
+    return res.status(400).json({ error: "必須項目が入力されていません（出発日・日帰り/宿泊）" });
+  }
+
+  if (stayType === "宿泊" && (!nights || nights < 1)) {
+    return res.status(400).json({ error: "宿泊の場合、宿泊日数は1以上で指定してください" });
+  }
+
   console.log(">>> [開始] リクエストを受信しました");
   console.log(`場所: ${prompt}`);
-  console.log(`出発場所: ${startLocation}`);
-  console.log(`出発時間: ${time}`);
-  console.log(`旅行タイプ: ${stayType}`);
+  console.log(`日帰り/宿泊: ${stayType}`);
   console.log(`出発日: ${startDate}`);
-  console.log(`宿泊数: ${nights}`);
+  if (startLocation) console.log(`出発場所: ${startLocation}`);
+  if (time) console.log(`出発時間: ${time}`);
+  if (stayType === "宿泊") console.log(`宿泊数: ${nights}`);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // 宿泊の場合はチェックアウト日 = 出発日 + 宿泊日数
     const finalEndDate = stayType === "日帰り"
       ? startDate
       : format(addDays(parseISO(startDate), nights), "yyyy-MM-dd");
 
-    const richPrompt = `
-${prompt} についての旅行プランを作成してください。
-
-出発場所: ${startLocation}
-旅行開始日時（出発日・時間）: ${startDate} ${time}
-旅行終了日（宿泊の場合）: ${finalEndDate}
-旅行タイプ: ${stayType}
-宿泊日数: ${stayType === "宿泊" ? nights : 0}
-
-【条件】
-・この日時・出発場所からスタートするプラン
-・時間ごとにスケジュールを書く
-・宿泊の場合は宿泊場所も考慮
-・現実的な移動時間を考慮する
-
-【重要ルール】
-回答の最後に、ルートを生成するために訪問する具体的な地点名（観光地名や駅名）を
-必ず以下の形式で一行で記述してください。
-
-記述例：
-Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
-`;
+    // プロンプト作成
+    let richPrompt = `${prompt} についての旅行プランを作成してください。\n\n`;
+    richPrompt += `旅行開始日: ${startDate}\n`;
+    richPrompt += `旅行タイプ: ${stayType}\n`;
+    if (stayType === "宿泊") richPrompt += `宿泊日数: ${nights}\n`;
+    if (startLocation) richPrompt += `出発場所: ${startLocation}\n`;
+    if (time) richPrompt += `出発時間: ${time}\n`;
+    richPrompt += `旅行終了日（宿泊の場合）: ${finalEndDate}\n\n`;
+    richPrompt += `【条件】\n`;
+    richPrompt += `・現実的な移動時間を考慮する\n`;
+    richPrompt += `・時間ごとのスケジュールを書く\n`;
+    richPrompt += `・宿泊の場合は宿泊場所も考慮\n\n`;
+    richPrompt += `【重要ルール】\n`;
+    richPrompt += `回答の最後にルート生成用の訪問地点名を一行で記述してください\n`;
+    richPrompt += `例: Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]`;
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
     const result = await model.generateContent(richPrompt);
