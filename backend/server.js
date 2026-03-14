@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: "http://localhost:5173", // ReactのURL
+  origin: "http://localhost:5173", // React側のURL
   methods: ["POST", "GET"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -16,7 +16,7 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  // ⭐ ここを変更（date, time, stayType を追加）
+  // ⭐ React側から送信されるデータを取得
   const { prompt, date, time, stayType } = req.body;
 
   console.log(`>>> [開始] リクエストを受信しました`);
@@ -27,7 +27,7 @@ app.post("/generate", async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // ⭐ 日時と宿泊タイプをプロンプトに追加
+    // ⭐ 日時・宿泊タイプをプロンプトに組み込み
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
