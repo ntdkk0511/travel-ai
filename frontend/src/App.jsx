@@ -8,7 +8,6 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const containerStyle = { width: '100%', height: '400px', marginTop: '20px', borderRadius: '10px' };
 // 初期表示の中心（京都駅付近）
 const center = { lat: 34.9858, lng: 135.7588 };
-// ai208 
 export default function App() {
   const [plan, setPlan] = useState("");
   const [result, setResult] = useState("");
@@ -86,9 +85,6 @@ export default function App() {
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px", marginLeft: "10px" }}>
           {loading ? "生成中..." : "プラン生成"}
         </button>
-      </div>
-      <div>
-        <input type="text" />
       </div>
 
       {/* 地図の表示エリア */}

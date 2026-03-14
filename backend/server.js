@@ -25,7 +25,7 @@ app.post("/generate", async (req, res) => {
     // --- ここからプロンプトの加工 ---
     const richPrompt = `
       ${prompt} についての旅行プランを作成してください。
-      
+
       【重要ルール】
       回答の最後に、ルートを生成するために訪問する具体的な地点名（観光地名や駅名）を
       必ず以下の形式で一行で記述してください。
@@ -34,10 +34,10 @@ app.post("/generate", async (req, res) => {
     // ------------------------------
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
-    
+
     // 加工した richPrompt を渡す
     const result = await model.generateContent(richPrompt);
-    
+
     console.log(">>> [解析中] AIからの応答を解析しています...");
     const response = await result.response;
     const text = response.text();
