@@ -17,21 +17,24 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
   // ⭐ React側から送信されるデータを取得
-  const { prompt, date, time, stayType } = req.body;
+  const { prompt, startDate, endDate, time, stayType } = req.body;
 
   console.log(`>>> [開始] リクエストを受信しました`);
   console.log(`場所: ${prompt}`);
-  console.log(`日時: ${date} ${time}`);
-  console.log(`宿泊タイプ: ${stayType}`);
+  console.log(`出発時間: ${time}`);
+  console.log(`旅行タイプ: ${stayType}`);
+  console.log(`チェックイン日: ${startDate}`);
+  console.log(`チェックアウト日: ${endDate}`);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // ⭐ 日時・宿泊タイプをプロンプトに組み込み
+    // ⭐ 日付・時間・宿泊タイプをプロンプトに組み込み
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
-旅行開始日時: ${date} ${time}
+旅行開始日時（出発日・時間）: ${startDate} ${time}
+旅行終了日（宿泊の場合）: ${stayType === "宿泊" ? endDate : startDate}
 旅行タイプ: ${stayType}
 
 【条件】
