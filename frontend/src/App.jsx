@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import { GoogleMap, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, DirectionsRenderer, useJsApiLoader, MarkerF } from '@react-google-maps/api'; // ★MarkerFを追加
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -15,11 +15,32 @@ export default function App() {
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // --- ★追加ここから ---
+  const [lockers, setLockers] = useState([]); // ロッカー情報
+  const [showLockers, setShowLockers] = useState(false); // 表示フラグ
+  // --- ★追加ここまで ---
+
   // Google Mapsのロード
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ['places']
   });
+
+  // --- ★追加ここから：ロッカー取得関数 ---
+  const fetchLockers = async (locationName) => {
+    try {
+      const res = await fetch("http://localhost:3000/search-lockers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationName })
+      });
+      const data = await res.json();
+      if (data.lockers) setLockers(data.lockers);
+    } catch (err) {
+      console.error("ロッカー取得失敗:", err);
+    }
+  };
+  // --- ★追加ここまで ---
 
   // AIの回答から [地点, 地点] を抜き出してルートを計算する関数
   const calculateRoute = useCallback((text) => {
@@ -31,6 +52,9 @@ export default function App() {
 
     const locations = match[1].split(',').map(s => s.trim());
     if (locations.length < 2) return;
+
+    // --- ★追加：最初の地点でロッカーを検索しておく ---
+    fetchLockers(locations[0]);
 
     const directionsService = new window.google.maps.DirectionsService();
     
@@ -56,6 +80,9 @@ export default function App() {
     try {
       setLoading(true);
       setDirections(null); // 地図をリセット
+      setLockers([]); // ★追加：ロッカーもリセット
+      setShowLockers(false); // ★追加：表示スイッチもオフにリセット
+      
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,10 +115,30 @@ export default function App() {
         </button>
       </div>
 
+      {/* --- ★追加：表示切り替えボタン --- */}
+      <div style={{ marginBottom: "10px" }}>
+        <button 
+          onClick={() => setShowLockers(!showLockers)}
+          style={{ padding: "8px 16px", cursor: "pointer" }}
+        >
+          {showLockers ? "ロッカーを隠す" : "ロッカーの位置を表示"}
+        </button>
+      </div>
+
       {/* 地図の表示エリア */}
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
+          
+          {/* --- ★追加：ロッカーのマーカーを表示 --- */}
+          {showLockers && lockers.map((locker) => (
+            <MarkerF 
+              key={locker.id} 
+              position={locker.location} 
+              title={locker.name}
+              label="🔑" 
+            />
+          ))}
         </GoogleMap>
       ) : (
         <div>地図を読み込み中...</div>
