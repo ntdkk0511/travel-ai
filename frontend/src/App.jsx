@@ -15,6 +15,7 @@ export default function App() {
   const [stayType, setStayType] = useState("日帰り");
   const [startDate, setStartDate] = useState(new Date());
   const [nights, setNights] = useState(1);
+  const [stayLocation, setStayLocation] = useState(""); // 宿泊場所（任意）
   const [result, setResult] = useState("");
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,6 @@ export default function App() {
     libraries: ['places']
   });
 
-  // Google Maps ルート計算
   const calculateRoute = useCallback((text) => {
     if (!isLoaded) return;
     const match = text.match(/Locations:\s*\[(.*?)\]/);
@@ -44,7 +44,6 @@ export default function App() {
     });
   }, [isLoaded]);
 
-  // プラン生成
   const generatePlan = async () => {
     if (!plan || !stayType || !startDate) {
       alert("旅行内容・日付・日帰り/宿泊を入力してください");
@@ -68,7 +67,10 @@ export default function App() {
         startDate: start,
         stayType,
       };
-      if (stayType === "宿泊") bodyData.nights = nights;
+      if (stayType === "宿泊") {
+        bodyData.nights = nights;
+        if (stayLocation) bodyData.stayLocation = stayLocation;
+      }
       if (startLocation) bodyData.startLocation = startLocation;
       if (time) bodyData.time = time;
 
@@ -144,15 +146,25 @@ export default function App() {
           style={{ flex: "0 0 150px", padding: "10px" }}
         />
 
-        {/* 宿泊日数（宿泊の場合のみ必須） */}
+        {/* 宿泊日数（宿泊の場合必須） */}
         {stayType === "宿泊" && (
-          <input
-            type="number"
-            value={nights}
-            min={1}
-            onChange={e => setNights(Number(e.target.value))}
-            style={{ flex: "0 0 100px", padding: "10px" }}
-          />
+          <>
+            <input
+              type="number"
+              value={nights}
+              min={1}
+              onChange={e => setNights(Number(e.target.value))}
+              style={{ flex: "0 0 100px", padding: "10px" }}
+            />
+            {/* 宿泊場所（任意） */}
+            <input
+              type="text"
+              value={stayLocation}
+              onChange={e => setStayLocation(e.target.value)}
+              placeholder="宿泊場所（任意）"
+              style={{ flex: "1 1 200px", padding: "10px" }}
+            />
+          </>
         )}
 
         {/* プラン生成ボタン */}

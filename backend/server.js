@@ -20,7 +20,7 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  const { prompt, startDate, stayType, nights = 0, time, startLocation } = req.body;
+  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation } = req.body;
 
   // 必須チェック
   if (!startDate || !stayType) {
@@ -32,12 +32,15 @@ app.post("/generate", async (req, res) => {
   }
 
   console.log(">>> [開始] リクエストを受信しました");
-  console.log(`場所: ${prompt}`);
+  console.log(`旅行内容: ${prompt}`);
   console.log(`日帰り/宿泊: ${stayType}`);
   console.log(`出発日: ${startDate}`);
   if (startLocation) console.log(`出発場所: ${startLocation}`);
   if (time) console.log(`出発時間: ${time}`);
-  if (stayType === "宿泊") console.log(`宿泊数: ${nights}`);
+  if (stayType === "宿泊") {
+    console.log(`宿泊日数: ${nights}`);
+    if (stayLocation) console.log(`宿泊場所: ${stayLocation}`);
+  }
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -50,9 +53,12 @@ app.post("/generate", async (req, res) => {
     let richPrompt = `${prompt} についての旅行プランを作成してください。\n\n`;
     richPrompt += `旅行開始日: ${startDate}\n`;
     richPrompt += `旅行タイプ: ${stayType}\n`;
-    if (stayType === "宿泊") richPrompt += `宿泊日数: ${nights}\n`;
-    if (startLocation) richPrompt += `出発場所: ${startLocation}\n`;
-    if (time) richPrompt += `出発時間: ${time}\n`;
+    if (stayType === "宿泊") {
+      richPrompt += `宿泊日数: ${nights}\n`;
+      if (stayLocation) richPrompt += `宿泊場所: ${stayLocation}（任意）\n`;
+    }
+    if (startLocation) richPrompt += `出発場所: ${startLocation}（任意）\n`;
+    if (time) richPrompt += `出発時間: ${time}（任意）\n`;
     richPrompt += `旅行終了日（宿泊の場合）: ${finalEndDate}\n\n`;
     richPrompt += `【条件】\n`;
     richPrompt += `・現実的な移動時間を考慮する\n`;
@@ -72,7 +78,8 @@ app.post("/generate", async (req, res) => {
       plan: text,
       startDate,
       endDate: finalEndDate,
-      nights
+      nights,
+      stayLocation: stayLocation || ""
     });
 
   } catch (err) {
