@@ -20,10 +20,11 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  const { prompt, startDate, stayType, nights = 0, time } = req.body;
+  const { prompt, startDate, stayType, nights = 0, time, startLocation } = req.body;
 
   console.log(">>> [開始] リクエストを受信しました");
   console.log(`場所: ${prompt}`);
+  console.log(`出発場所: ${startLocation}`);
   console.log(`出発時間: ${time}`);
   console.log(`旅行タイプ: ${stayType}`);
   console.log(`出発日: ${startDate}`);
@@ -40,13 +41,14 @@ app.post("/generate", async (req, res) => {
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
+出発場所: ${startLocation}
 旅行開始日時（出発日・時間）: ${startDate} ${time}
 旅行終了日（宿泊の場合）: ${finalEndDate}
 旅行タイプ: ${stayType}
 宿泊日数: ${stayType === "宿泊" ? nights : 0}
 
 【条件】
-・この日時からスタートするプラン
+・この日時・出発場所からスタートするプラン
 ・時間ごとにスケジュールを書く
 ・宿泊の場合は宿泊場所も考慮
 ・現実的な移動時間を考慮する

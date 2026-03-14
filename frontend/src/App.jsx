@@ -10,6 +10,7 @@ const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
   const [plan, setPlan] = useState("");
+  const [startLocation, setStartLocation] = useState(""); // 追加
   const [time, setTime] = useState("");
   const [stayType, setStayType] = useState("日帰り");
   const [startDate, setStartDate] = useState(new Date());
@@ -45,8 +46,8 @@ export default function App() {
 
   // プラン生成
   const generatePlan = async () => {
-    if (!plan || !time || !startDate) {
-      alert("プラン・出発日・時間を入力してください");
+    if (!plan || !time || !startDate || !startLocation) {
+      alert("プラン・出発場所・出発日・時間を入力してください");
       return;
     }
 
@@ -54,7 +55,6 @@ export default function App() {
     setDirections(null);
     setResult("");
 
-    // 出発日とチェックアウト日を計算
     const start = startDate.toISOString().split('T')[0];
     const end = stayType === "日帰り"
       ? start
@@ -69,7 +69,8 @@ export default function App() {
           startDate: start,
           stayType,
           nights,
-          time
+          time,
+          startLocation // 送信
         })
       });
       const data = await res.json();
@@ -96,13 +97,24 @@ export default function App() {
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
 
-        {/* 出発時間 */}
+        {/* 出発場所 */}
         <input
-          type="time"
-          value={time}
-          onChange={e => setTime(e.target.value)}
-          style={{ flex: "0 0 120px", padding: "10px" }}
+          value={startLocation}
+          onChange={e => setStartLocation(e.target.value)}
+          placeholder="出発場所"
+          style={{ flex: "1 1 200px", padding: "10px" }}
         />
+
+        {/* 出発時間 */}
+        <div style={{ display: "flex", flexDirection: "column", flex: "0 0 120px" }}>
+          <label style={{ fontSize: "12px", marginBottom: "2px" }}>出発時間</label>
+          <input
+            type="time"
+            value={time}
+            onChange={e => setTime(e.target.value)}
+            style={{ padding: "10px" }}
+          />
+        </div>
 
         {/* 日帰り / 宿泊 */}
         <select
@@ -123,7 +135,7 @@ export default function App() {
           style={{ flex: "0 0 150px", padding: "10px" }}
         />
 
-        {/* 宿泊日数入力 */}
+        {/* 宿泊日数 */}
         {stayType === "宿泊" && (
           <input
             type="number"
