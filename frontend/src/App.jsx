@@ -10,11 +10,12 @@ const containerStyle = { width: '100%', height: '400px', marginTop: '20px', bord
 const center = { lat: 34.9858, lng: 135.7588 };
 
 export default function App() {
-  const [plan, setPlan] = useState("");         // プランのテキスト入力
-  const [date, setDate] = useState("");         // 日付入力
-  const [time, setTime] = useState("");         // 時間入力
-  const [stayType, setStayType] = useState("日帰り"); // 日帰り/宿泊日数自由入力
-  const [result, setResult] = useState("");     // AIからの結果
+  const [plan, setPlan] = useState("");           // プランのテキスト入力
+  const [time, setTime] = useState("");           // 出発時間
+  const [stayType, setStayType] = useState("日帰り"); // 日帰り/宿泊
+  const [startDate, setStartDate] = useState(""); // 出発日 / チェックイン日
+  const [endDate, setEndDate] = useState("");     // 宿泊の場合のチェックアウト日
+  const [result, setResult] = useState("");       // AIからの結果
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,8 +56,8 @@ export default function App() {
 
   // プラン生成ボタン
   const generatePlan = async () => {
-    if (!plan || !date || !time || !stayType) {
-      alert("場所・日付・時間・宿泊日数を入力してください");
+    if (!plan || !time || !startDate || (stayType === "宿泊" && !endDate)) {
+      alert("場所・日付・時間を入力してください");
       return;
     }
 
@@ -65,11 +66,21 @@ export default function App() {
       setDirections(null);
       setResult("");
 
+      // 日帰りなら endDate は startDate に合わせる
+      const finalEndDate = stayType === "日帰り" ? startDate : endDate;
+
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: plan, date, time, stayType }) // ⭐ stayTypeを追加
+        body: JSON.stringify({
+          prompt: plan,
+          startDate,
+          endDate: finalEndDate,
+          time,
+          stayType
+        })
       });
+
       const data = await res.json();
       setResult(data.plan);
 
@@ -91,19 +102,11 @@ export default function App() {
         <input
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
-          placeholder="例：京都1日旅"
+          placeholder="例：京都旅行"
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
 
-        {/* 日付入力 */}
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          style={{ flex: "0 0 150px", padding: "10px" }}
-        />
-
-        {/* 時間入力 */}
+        {/* 出発時間 */}
         <input
           type="time"
           value={time}
@@ -111,14 +114,34 @@ export default function App() {
           style={{ flex: "0 0 120px", padding: "10px" }}
         />
 
-        {/* 宿泊日数入力（自由入力） */}
-        <input
-          type="text"
+        {/* 日帰り／宿泊選択 */}
+        <select
           value={stayType}
           onChange={(e) => setStayType(e.target.value)}
-          placeholder="例: 日帰り, 1泊, 5泊"
           style={{ flex: "0 0 120px", padding: "10px" }}
+        >
+          <option value="日帰り">日帰り</option>
+          <option value="宿泊">宿泊</option>
+        </select>
+
+        {/* 出発日 */}
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          style={{ flex: "0 0 150px", padding: "10px" }}
         />
+
+        {/* 宿泊の場合のみチェックアウト日 */}
+        {stayType === "宿泊" && (
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            min={startDate}
+            style={{ flex: "0 0 150px", padding: "10px" }}
+          />
+        )}
 
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? "生成中..." : "プラン生成"}
