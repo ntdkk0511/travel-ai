@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const UserService = require("../services/UserService");
-const testDataFile = path.join(__dirname,"../data/users.json");
+const testDataFile = path.join(__dirname,"../data/user.json");
 
 // testように変更する
 // UserModel.dataFile = testDataFile;
