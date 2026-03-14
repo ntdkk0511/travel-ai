@@ -2,18 +2,61 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from "axios"; // ★追加：APIリクエスト用
 
 dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: "http://localhost:5173", // ReactのURL（5173や3001など自分に合わせて変更）
+  origin: "http://localhost:5173", // ReactのURL
   methods: ["POST", "GET"],
   allowedHeaders: ["Content-Type"]
 }));
 app.use(express.json());
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// --- ★追加：Google Maps APIキーの定義 ---
+const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY; 
+
+// --- ★追加：ロッカー検索エンドポイント ---
+app.post("/search-lockers", async (req, res) => {
+  const { locationName } = req.body;
+  try {
+    // 1. 地名から座標を取得
+    const geoRes = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+      params: { address: locationName, key: GOOGLE_MAPS_API_KEY }
+    });
+
+    if (!geoRes.data.results.length) {
+      return res.status(404).json({ error: "場所が見つかりませんでした" });
+    }
+
+    const { lat, lng } = geoRes.data.results[0].geometry.location;
+
+    // 2. 周辺のロッカーを検索
+    const placesRes = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json`, {
+      params: {
+        location: `${lat},${lng}`,
+        radius: 1000,
+        keyword: "coin locker luggage storage",
+        language: "ja",
+        key: GOOGLE_MAPS_API_KEY
+      }
+    });
+
+    res.json({
+      lockers: placesRes.data.results.map(p => ({
+        id: p.place_id,
+        name: p.name,
+        location: p.geometry.location
+      }))
+    });
+  } catch (err) {
+    console.error("ロッカー検索エラー:", err.message);
+    res.status(500).json({ error: "ロッカー情報の取得に失敗しました" });
+  }
+});
 
 app.post("/generate", async (req, res) => {
   const { prompt } = req.body;
