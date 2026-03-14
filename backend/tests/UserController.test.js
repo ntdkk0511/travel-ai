@@ -1,12 +1,20 @@
 // test jestを使っている。
 
-const fs = require("fs");
-const path = require("path");
-const UserService = require("../services/UserService");
-const UserController = require("../controllers/UserController.js");
-const testDataFile = path.join(__dirname,"../data/user.json");
-jest.mock("../services/UserService");
+import { jest, test, expect, beforeEach, afterAll } from "@jest/globals";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+const testDataFile = path.join(__dirname,"../data/user.json");
+
+jest.unstable_mockModule("../services/UserService.js", () => ({
+    default: { createUser: jest.fn(), getUserById: jest.fn() },
+}));
+const { default: UserService } = await import("../services/UserService.js");
+const { default: UserController } = await import("../controllers/UserController.js");
 
 
 beforeEach(()=>{

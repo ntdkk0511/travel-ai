@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function LoginForm() {
+export default function LoginForm({ onLoginSuccess }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -11,8 +11,9 @@ export default function LoginForm() {
             const response = await axios.post("http://localhost:3000/auth/login", {
                 email, password
             });
-            console.log(response.data); // ここで JWT などを受け取る
+            console.log(response.data);
             localStorage.setItem("token", response.data.token);
+            onLoginSuccess?.();
         } catch (error) {
             console.error(error.response.data);
         }

@@ -1,20 +1,20 @@
 [
   {
-    "id": "bbf8ee43-1f52-4472-92e6-49b93268852b",
-    "name": "neko",
-    "email": "neko@mail.com",
-    "password": "1234neko"
+    "id": "49f1d6e0-ae5f-4520-ba02-986e8397f596",
+    "name": "shin",
+    "email": "shin-yamamoto@copalette.app",
+    "password": "ssss"
   },
   {
-    "id": "831df68e-68ed-48ae-8aa8-f733c4e65e1f",
-    "name": "ai",
-    "email": "ai@gmail.com",
-    "password": "1234"
+    "id": "9d086ab9-8b83-4b2f-bdde-3a8d03dacffc",
+    "name": "shin",
+    "email": "shin-yamamoto@copalette.app",
+    "password": "ssss"
   },
   {
-    "id": "7ea71f3a-2598-418f-9217-253cc424dccb",
-    "name": "ai",
-    "email": "ai@gmail.com",
-    "password": "1234"
+    "id": "fd6d6bd1-ad21-452b-93df-f4f83a4efccd",
+    "name": "shin",
+    "email": "shin-yamamoto@copalette.app",
+    "password": "ssss"
   }
 ]

@@ -1,11 +1,16 @@
 // test jestを使っている。
 
-const fs = require("fs");
-const path = require("path");
+import { jest, test, expect, beforeEach, afterAll } from "@jest/globals";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const AuthService = require("../services/AuthService");
-const UserService = require("../services/UserService");
-const UserModel = require("../models/UserModel");
+import AuthService from "../services/AuthService.js";
+import UserService from "../services/UserService.js";
+import UserModel from "../models/UserModel.js";
 const testDataFile = path.join(__dirname,"../data/user.json");
 
 // testように変更する

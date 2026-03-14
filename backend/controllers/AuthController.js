@@ -2,9 +2,7 @@
 // ここでサービスやDBを呼び出して、レスポンスを返す。
 // routine -> controller -> service
 
-const express = require("express");
-const router = express.Router();
-const AuthService = require("../services/AuthService");
+import AuthService from "../services/AuthService.js";
 
 class AuthController{
     static login(req,res){
@@ -18,4 +16,4 @@ class AuthController{
     }
 }
 
-module.exports = AuthController;
+export default AuthController;

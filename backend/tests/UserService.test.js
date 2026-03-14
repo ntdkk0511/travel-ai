@@ -1,9 +1,14 @@
 // test jestを使っている。
 
-const fs = require("fs");
-const path = require("path");
+import { test, expect, beforeEach, afterAll } from "@jest/globals";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const UserService = require("../services/UserService");
+import UserService from "../services/UserService.js";
 const testDataFile = path.join(__dirname,"../data/user.json");
 
 // testように変更する
@@ -19,6 +24,6 @@ afterAll(()=>{
     fs.unlinkSync(testDataFile);
 });
 test("service create latest test",()=>{
-    const user = UserService.createUser("ai","ai.gmail.com","1234",file=testDataFile);
+    const user = UserService.createUser("ai","ai.gmail.com","1234",testDataFile);
     expect(user.name).toBe("ai");
 })

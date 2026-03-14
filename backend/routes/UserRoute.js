@@ -3,15 +3,15 @@
 // urlparam(post body) → route → controller
 // test はいらない
 
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const UserController = require("../controllers/UserController");
+import UserController from "../controllers/UserController.js";
 
 // 体重登録 body(form) -> post
 router.post("/register",UserController.createUser)
 
 
 // 最新の体重の取得 param(url) get 先頭の/を忘れない
-router.get("/latest/:id",UserController.createUser);
+router.get("/latest/:id",UserController.getUserById);
 
-module.exports = router;
+export default router;
