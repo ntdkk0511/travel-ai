@@ -16,7 +16,7 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  // ⭐ React側から送信されるデータを取得
+  // React側から送信されるデータ
   const { prompt, startDate, endDate, time, stayType } = req.body;
 
   console.log(`>>> [開始] リクエストを受信しました`);
@@ -29,7 +29,7 @@ app.post("/generate", async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // ⭐ 日付・時間・宿泊タイプをプロンプトに組み込み
+    // プロンプトに日付・時間・宿泊タイプを組み込み
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
 
