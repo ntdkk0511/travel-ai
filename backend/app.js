@@ -1,3 +1,4 @@
+// ログインの確認用 node app.js を使って確認してください。
 const express = require("express");
 const app = express();
 
