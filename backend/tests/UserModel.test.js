@@ -39,3 +39,10 @@ test("get_user_by_id",()=>{
     expect(user.password).toBe(found.password);
 
 })
+// by emailのテスト
+test("get_user_by_email",()=>{
+    const user = UserModel.createUser("ai","ai.gmail.com","1234",file=testDataFile);
+    const found = UserModel.getUserByEmail("ai.gmail.com",testDataFile);
+    expect(user.password).toBe(found.password);
+
+})

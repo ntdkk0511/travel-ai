@@ -12,7 +12,7 @@ const path = require("path") //
 const dataFile = path.join(__dirname,"../data/users.json"); //__dirname はこのファイルの場所 ..は一つ上
 
 
-class UserModel{ // フォイルを指定する 
+class UserModel{ // フォイルを指定する
     constructor(id,name,email,password){
         this.id = id;
         this.name = name;
@@ -52,6 +52,11 @@ class UserModel{ // フォイルを指定する
     static getUserById(id,file = dataFile){
         users = UserModel.getAllUsers(file);
         return users.find(user => user.id === id); //id と同じuserを{}で取ってくる
+    }
+    // ログイン用
+    static getUserByEmail(email,file=dataFile){
+        users = UserModel.getAllUsers(file);
+        return users.find(user=> user.email === email);
     }
 
 }

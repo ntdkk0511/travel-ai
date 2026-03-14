@@ -3,7 +3,9 @@
 const fs = require("fs");
 const path = require("path");
 
+const AuthService = require("../services/AuthService");
 const UserService = require("../services/UserService");
+const UserModel = require("../models/UserModel");
 const testDataFile = path.join(__dirname,"../data/user.json");
 
 // testように変更する
@@ -18,7 +20,12 @@ afterAll(()=>{
     //テスト後にファイルを削除
     fs.unlinkSync(testDataFile);
 });
-test("service create latest test",()=>{
-    const user = UserService.createUser("ai","ai.gmail.com","1234",file=testDataFile);
-    expect(user.name).toBe("ai");
+test("login service",()=>{
+    UserModel.getUserByEmail = jest.fn().mockReturnValue({
+    name:"ai",
+    email:"ai.gmail.com",
+    password:"1234"
+    });
+    const result = AuthService.login("ai.gmail.com","1234");
+    expect(result.token).toBe("abc123");
 })
