@@ -1,10 +1,7 @@
 import { useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { GoogleMap, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
-import { DateRange } from 'react-date-range';
 import { addDays } from 'date-fns';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -15,7 +12,8 @@ export default function App() {
   const [plan, setPlan] = useState("");
   const [time, setTime] = useState("");
   const [stayType, setStayType] = useState("日帰り");
-  const [dateRange, setDateRange] = useState({ start: new Date(), end: new Date() });
+  const [startDate, setStartDate] = useState(new Date());
+  const [nights, setNights] = useState(1);
   const [result, setResult] = useState("");
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,6 +23,7 @@ export default function App() {
     libraries: ['places']
   });
 
+  // Google Maps ルート計算
   const calculateRoute = useCallback((text) => {
     if (!isLoaded) return;
     const match = text.match(/Locations:\s*\[(.*?)\]/);
@@ -44,9 +43,10 @@ export default function App() {
     });
   }, [isLoaded]);
 
+  // プラン生成
   const generatePlan = async () => {
-    if (!plan || !time || !dateRange.start || (stayType === "宿泊" && !dateRange.end)) {
-      alert("プラン・日付・時間を入力してください");
+    if (!plan || !time || !startDate) {
+      alert("プラン・出発日・時間を入力してください");
       return;
     }
 
@@ -54,14 +54,23 @@ export default function App() {
     setDirections(null);
     setResult("");
 
-    const startDate = dateRange.start.toISOString().split('T')[0];
-    const endDate = stayType === "日帰り" ? startDate : dateRange.end.toISOString().split('T')[0];
+    // 出発日とチェックアウト日を計算
+    const start = startDate.toISOString().split('T')[0];
+    const end = stayType === "日帰り"
+      ? start
+      : addDays(startDate, nights).toISOString().split('T')[0]; // 宿泊日数分加算
 
     try {
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: plan, startDate, endDate, time, stayType })
+        body: JSON.stringify({
+          prompt: plan,
+          startDate: start,
+          stayType,
+          nights,
+          time
+        })
       });
       const data = await res.json();
       setResult(data.plan);
@@ -79,18 +88,23 @@ export default function App() {
       <h1>AI旅行プランナー 🗺️</h1>
 
       <div style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+        {/* 旅行内容 */}
         <input
           value={plan}
           onChange={e => setPlan(e.target.value)}
           placeholder="例：京都旅行"
           style={{ flex: "1 1 200px", padding: "10px" }}
         />
+
+        {/* 出発時間 */}
         <input
           type="time"
           value={time}
           onChange={e => setTime(e.target.value)}
           style={{ flex: "0 0 120px", padding: "10px" }}
         />
+
+        {/* 日帰り / 宿泊 */}
         <select
           value={stayType}
           onChange={e => setStayType(e.target.value)}
@@ -100,30 +114,33 @@ export default function App() {
           <option value="宿泊">宿泊</option>
         </select>
 
-        {stayType === "日帰り" ? (
+        {/* 出発日 */}
+        <input
+          type="date"
+          value={startDate.toISOString().split('T')[0]}
+          min={new Date().toISOString().split('T')[0]}
+          onChange={e => setStartDate(new Date(e.target.value))}
+          style={{ flex: "0 0 150px", padding: "10px" }}
+        />
+
+        {/* 宿泊日数入力 */}
+        {stayType === "宿泊" && (
           <input
-            type="date"
-            value={dateRange.start.toISOString().split('T')[0]}
-            min={new Date().toISOString().split('T')[0]}
-            onChange={e => setDateRange({ start: new Date(e.target.value), end: new Date(e.target.value) })}
-            style={{ flex: "0 0 150px", padding: "10px" }}
-          />
-        ) : (
-          <DateRange
-            editableDateInputs={true}
-            onChange={item => setDateRange({ start: item.selection.startDate, end: item.selection.endDate })}
-            moveRangeOnFirstSelection={false}
-            ranges={[{ startDate: dateRange.start, endDate: dateRange.end, key: 'selection' }]}
-            minDate={new Date()}
-            maxDate={addDays(new Date(), 365)}
+            type="number"
+            value={nights}
+            min={1}
+            onChange={e => setNights(Number(e.target.value))}
+            style={{ flex: "0 0 100px", padding: "10px" }}
           />
         )}
 
+        {/* プラン生成ボタン */}
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? "生成中..." : "プラン生成"}
         </button>
       </div>
 
+      {/* Google Map */}
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
@@ -133,6 +150,8 @@ export default function App() {
       )}
 
       <hr />
+
+      {/* AIプラン表示 */}
       <div style={{ marginTop: "20px" }}>
         <ReactMarkdown>{result}</ReactMarkdown>
       </div>

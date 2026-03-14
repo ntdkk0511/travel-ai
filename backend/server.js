@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { addDays, parseISO, format } from "date-fns";
 
 dotenv.config();
 
@@ -19,20 +20,22 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/generate", async (req, res) => {
-  const { prompt, startDate, endDate, time, stayType } = req.body;
+  const { prompt, startDate, stayType, nights = 0, time } = req.body;
 
   console.log(">>> [開始] リクエストを受信しました");
   console.log(`場所: ${prompt}`);
   console.log(`出発時間: ${time}`);
   console.log(`旅行タイプ: ${stayType}`);
-  console.log(`チェックイン日: ${startDate}`);
-  console.log(`チェックアウト日: ${endDate}`);
+  console.log(`出発日: ${startDate}`);
+  console.log(`宿泊数: ${nights}`);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // 日帰りなら終了日も開始日と同じ
-    const finalEndDate = stayType === "日帰り" ? startDate : endDate;
+    // 宿泊の場合はチェックアウト日 = 出発日 + 宿泊日数
+    const finalEndDate = stayType === "日帰り"
+      ? startDate
+      : format(addDays(parseISO(startDate), nights), "yyyy-MM-dd");
 
     const richPrompt = `
 ${prompt} についての旅行プランを作成してください。
@@ -40,6 +43,7 @@ ${prompt} についての旅行プランを作成してください。
 旅行開始日時（出発日・時間）: ${startDate} ${time}
 旅行終了日（宿泊の場合）: ${finalEndDate}
 旅行タイプ: ${stayType}
+宿泊日数: ${stayType === "宿泊" ? nights : 0}
 
 【条件】
 ・この日時からスタートするプラン
@@ -53,7 +57,7 @@ ${prompt} についての旅行プランを作成してください。
 
 記述例：
 Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
-    `;
+`;
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
     const result = await model.generateContent(richPrompt);
@@ -61,7 +65,12 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
-    res.json({ plan: text });
+    res.json({
+      plan: text,
+      startDate,
+      endDate: finalEndDate,
+      nights
+    });
 
   } catch (err) {
     console.error("--- [エラー発生] ---");
@@ -75,6 +84,7 @@ Locations: [京都駅, 清水寺, 伏見稲荷大社, 京都駅]
   }
 });
 
+// サーバー起動
 app.listen(3000, () => {
   console.log("-----------------------------------------");
   console.log("Server running on http://localhost:3000");
