@@ -13,6 +13,7 @@ export default function App() {
   const [plan, setPlan] = useState("");       // プランのテキスト入力
   const [date, setDate] = useState("");       // 日付入力
   const [time, setTime] = useState("");       // 時間入力
+  const [stayType, setStayType] = useState("日帰り"); // 日帰り/泊数
   const [result, setResult] = useState("");   // AIからの結果
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,7 @@ export default function App() {
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: plan, date, time })
+        body: JSON.stringify({ prompt: plan, date, time, stayType }) // ⭐ stayType 追加
       });
       const data = await res.json();
       setResult(data.plan);
@@ -109,6 +110,14 @@ export default function App() {
           onChange={(e) => setTime(e.target.value)}
           style={{ flex: "0 0 120px", padding: "10px" }}
         />
+
+        {/* 日帰り/宿泊選択 */}
+        <select value={stayType} onChange={(e) => setStayType(e.target.value)} style={{ flex: "0 0 120px", padding: "10px" }}>
+          <option value="日帰り">日帰り</option>
+          <option value="1泊">1泊</option>
+          <option value="2泊">2泊</option>
+          <option value="3泊">3泊</option>
+        </select>
 
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? "生成中..." : "プラン生成"}
