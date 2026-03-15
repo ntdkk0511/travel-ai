@@ -16,6 +16,9 @@ import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
+//わがまま追加
+import refinePlanRouter from "./routes/refinePlanRoute.js";
+
 dotenv.config();
 
 const app = express();
@@ -33,6 +36,9 @@ app.use("/url-enrich", urlEnrichRoutes);
 
 //プラン保存
 app.use("/plans", planRouter);
+
+//追加のわがまま
+app.use("/refine-plan", refinePlanRouter);
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
