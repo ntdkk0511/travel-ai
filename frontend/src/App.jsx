@@ -15,9 +15,7 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-export default function App({user,onLogout}) {
-
-  function AppContent() {
+function AppContent({user,onLogout}) {
   const { t, lang } = useLanguage(); // lang を追加で取得
   const [plan, setPlan] = useState("");
   const [startLocation, setStartLocation] = useState("");
