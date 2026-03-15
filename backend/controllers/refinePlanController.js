@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addDays, parseISO, format } from "date-fns";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { genAI } from "../app.js";
 
 const LANG_INSTRUCTIONS = {
   ja: "必ず日本語のみで回答してください。他の言語を使わないでください。",
@@ -27,7 +26,9 @@ export const refinePlan = async (req, res) => {
   }
 
   try {
+    console.log('aaaaaaaaaaaa')
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    console.log('aaaaabbbbbbb')
     const langInstruction = LANG_INSTRUCTIONS[lang] ?? LANG_INSTRUCTIONS.ja;
 
     let prompt = `${langInstruction}\n\n`;
@@ -51,7 +52,7 @@ export const refinePlan = async (req, res) => {
 
     console.log(">>> [refinePlan] Gemini 2.5 に接続中...");
     const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     const text = response.text();
 
     console.log(">>> [refinePlan] 再生成完了");

@@ -52,7 +52,7 @@ app.use("/refine-plan", refinePlanRouter);
 app.use("/api/hotels", hotelRouter);
 
 // Gemini AIクライアント
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use("/api/posts", postRoutes)
 
