@@ -16,6 +16,8 @@ import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
+//ホテル
+import hotelRouter from "./routes/hotelRoute.js";
 dotenv.config();
 
 const app = express();
@@ -33,6 +35,9 @@ app.use("/url-enrich", urlEnrichRoutes);
 
 //プラン保存
 app.use("/plans", planRouter);
+
+//ホテル
+app.use("/api/hotels", hotelRouter);
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -109,14 +114,21 @@ app.post("/generate", async (req, res) => {
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
-    res.json({
-      plan: text,
-      startDate,
-      endDate: finalEndDate,
-      nights,
-      stayLocation: stayLocation || ""
-    });
+    
+    const hotelLocationMatch = text.match(/宿泊[場所施設]*[：:]\s*([^\n。、]+)/);
+const extractedHotelLocation =
+  stayLocation ||
+  (hotelLocationMatch ? hotelLocationMatch[1].trim() : null) ||
+  prompt;
 
+res.json({
+  plan: text,
+  startDate,
+  endDate: finalEndDate,
+  nights,
+  stayLocation: stayLocation || "",
+  hotelLocation: extractedHotelLocation
+});
   } catch (err) {
     console.error("--- [エラー発生] ---");
     console.error("Status:", err.status);
