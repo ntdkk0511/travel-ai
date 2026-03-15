@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config(); // ← 一番最初に実行
 import cors from "cors";
 import express from "express";
-import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addDays, parseISO, format } from "date-fns";
 import UserRoutes from "./routes/UserRoute.js";
@@ -18,7 +19,7 @@ import connectDB from "./db.js";
 import planRouter from "./routes/planRoute.js";
 
 
-dotenv.config();
+
 
 const app = express();
 // ✅ 追加: MongoDB接続を実行
