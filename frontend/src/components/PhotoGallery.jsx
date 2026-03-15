@@ -141,17 +141,17 @@ export default function PhotoGallery({ locations, onPhotosLoaded }) {
 
     useEffect(() => {
         if (!locations || locations.length === 0) {
-            setPhotos([]);
+            queueMicrotask(() => setPhotos([]));
             return;
         }
 
         const key = locations.join(",");
         if (key === prevKey) return;
-        setPrevKey(key);
+        queueMicrotask(() => setPrevKey(key));
 
         console.log(">>> [PhotoGallery] 写真取得開始:", locations);
-        setLoading(true);
-        setPhotos([]);
+        queueMicrotask(() => setLoading(true));
+        queueMicrotask(() => setPhotos([]));
 
         fetch("http://localhost:3000/api/photos", {
             method: "POST",

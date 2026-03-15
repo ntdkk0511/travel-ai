@@ -3,8 +3,7 @@
 import express from "express";
 
 const router = express.Router();
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-console.log("APIキー確認:", GOOGLE_API_KEY);
+// ※ process.env はリクエスト時に取得（import 時点では dotenv 未読込のため）
 /**
  * POST /url-enrich
  * body: { locations: ["清水寺", "金閣寺", ...] }
@@ -12,6 +11,7 @@ console.log("APIキー確認:", GOOGLE_API_KEY);
  * レスポンス: { "清水寺": "https://...", "金閣寺": "https://..." }
  */
 router.post("/", async (req, res) => {
+  const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
   const { locations } = req.body;
   console.log("受信したlocations:", locations);
   if (!locations || !Array.isArray(locations) || locations.length === 0) {
@@ -26,7 +26,7 @@ router.post("/", async (req, res) => {
   try {
     const results = await Promise.all(
       locations.map(async (name) => {
-        const url = await fetchPlaceWebsite(name);
+        const url = await fetchPlaceWebsite(name, GOOGLE_API_KEY);
         return [name, url];
       })
     );
@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
 /**
  * Places API で観光地名 → 公式WebサイトURLを取得
  */
-async function fetchPlaceWebsite(placeName) {
+async function fetchPlaceWebsite(placeName, GOOGLE_API_KEY) {
   try {
     // ① テキスト検索で place_id を取得
     const searchUrl =

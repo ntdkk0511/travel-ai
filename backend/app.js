@@ -17,13 +17,15 @@ import connectDB from "./db.js";
 
 //プラン保存
 import planRouter from "./routes/planRoute.js";
+
 //掲示板機能
 import postRoutes from "./routes/postRoutes.js";
 
+//わがまま追加
+import refinePlanRouter from "./routes/refinePlanRoute.js";
+
 //ホテル
 import hotelRouter from "./routes/hotelRoute.js";
-
-
 
 const app = express();
 // ✅ 追加: MongoDB接続を実行
@@ -40,13 +42,15 @@ app.use("/api/photos", photoRouter);
 app.use("/url-enrich", urlEnrichRoutes);
 
 //プラン保存
-app.use("/plans", planRouter);
+app.use("/api/plans", planRouter);
+
+
+//追加のわがまま
+app.use("/refine-plan", refinePlanRouter);
 
 //ホテル
 app.use("/api/hotels", hotelRouter);
 
-//掲示板
-app.use("/posts", postRoutes);
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

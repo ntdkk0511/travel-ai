@@ -11,7 +11,7 @@ export default function Root() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token|| token === "undefined") {
-      setIsLoggedIn(false);
+      queueMicrotask(() => setIsLoggedIn(false));
       return;
     }
 
