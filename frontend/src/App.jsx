@@ -9,10 +9,21 @@ import PlanWithLinks from "./PlanWithLinks";
 // cat
 import LoadingCat from "./LoadingCat";
 
+
+// 予算
+import HotelBudgetInput from "./components/HotelBudgetInput";
+import TripBudgetInput from "./components/TripBudgetInput";
+import { useHotelBudget } from "./components/useHotelBudget";
+
 // プラン保存・一覧
 import SavePlanButton from "./components/SavePlanButton";
+
+//ホテル
+import HotelList from "./components/HotelList";
+
 import MyPlans from "./components/MyPlans";
 import { usePlans } from "./hooks/usePlans";
+
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -41,8 +52,13 @@ function AppContent({ user, onLogout }) {
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]);
 
+  //ホテル
+  const [hotelLocation, setHotelLocation] = useState("");
   // ★ プラン保存フック（user.id を渡す）
   const { plans, saving, loading: plansLoading, saveSuccess, savePlan, fetchPlans, deletePlan } = usePlans(user?.id);
+
+  // 予算
+  const { hotelBudget, setHotelBudget, totalBudget, setTotalBudget, getBudgetForRequest } = useHotelBudget();
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -94,6 +110,8 @@ function AppContent({ user, onLogout }) {
     setLocations([]);
     setSpotPhotos([]);
 
+    //ホテル
+    setHotelLocation("");
     const start = startDate.toISOString().split("T")[0];
 
     try {
@@ -104,6 +122,7 @@ function AppContent({ user, onLogout }) {
         bodyData.nights = nights;
         if (stayLocation) bodyData.stayLocation = stayLocation;
       }
+      Object.assign(bodyData, getBudgetForRequest(stayType, nights)); // 予算（日帰り・宿泊共通）
 
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
@@ -115,8 +134,10 @@ function AppContent({ user, onLogout }) {
 
       if (res.ok) {
         setResult(data.plan);
-        setEndDate(data.endDate);                        // ★ 追加
+        setEndDate(data.endDate);
+        if (stayType === "宿泊") setHotelLocation(data.hotelLocation || stayLocation || plan); // ← これに置き換え
         calculateRoute(data.plan);
+
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
           const parsed = match[1].split(",").map((s) => s.trim());
@@ -209,8 +230,13 @@ function AppContent({ user, onLogout }) {
               placeholder={t("travel.stayPlaceholder")}
               style={{ padding: "10px", flex: 1 }}
             />
+            {/* ホテル予算（宿泊時のみ） */}
+            <HotelBudgetInput budget={hotelBudget} setBudget={setHotelBudget} />
           </>
         )}
+
+        {/* 全体予算（日帰り・宿泊共通） */}
+        <TripBudgetInput totalBudget={totalBudget} setTotalBudget={setTotalBudget} />
 
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? t("travel.generating") : t("travel.generate")}
@@ -235,6 +261,11 @@ function AppContent({ user, onLogout }) {
       {/* プランテキスト＋場所ごとの写真をインライン表示 */}
       <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
 
+
+      <HotelList
+      hotelLocation={hotelLocation}
+      stayType={stayType}
+      />
       {/* ★ 保存ボタン（プランが生成されたときだけ表示） */}
       <SavePlanButton
         onSave={handleSave}
