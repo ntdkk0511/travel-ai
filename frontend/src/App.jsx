@@ -5,8 +5,6 @@ import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import PhotoGallery from "./components/PhotoGallery";
 import PlanWithLinks from "./PlanWithLinks";
-
-// cat
 import LoadingCat from "./LoadingCat";
 
 
@@ -23,6 +21,10 @@ import HotelList from "./components/HotelList";
 
 import MyPlans from "./components/MyPlans";
 import { usePlans } from "./hooks/usePlans";
+
+
+// ★ 追加要望
+import RefinePlan from "./components/RefinePlan";
 
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -46,15 +48,18 @@ function AppContent({ user, onLogout }) {
   const [nights, setNights] = useState(1);
   const [stayLocation, setStayLocation] = useState("");
   const [result, setResult] = useState("");
-  const [endDate, setEndDate] = useState("");           // ★ 追加
+  const [endDate, setEndDate] = useState("");
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [refineLoading, setRefineLoading] = useState(false); // ★ 追加
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]);
 
+=======
   //ホテル
   const [hotelLocation, setHotelLocation] = useState("");
   // ★ プラン保存フック（user.id を渡す）
+
   const { plans, saving, loading: plansLoading, saveSuccess, savePlan, fetchPlans, deletePlan } = usePlans(user?.id);
 
   // 予算
@@ -93,6 +98,7 @@ function AppContent({ user, onLogout }) {
     [isLoaded]
   );
 
+  // 初回プラン生成
   const generatePlan = async () => {
     if (!plan || !startDate) {
       alert(t("travel.inputError"));
@@ -106,7 +112,7 @@ function AppContent({ user, onLogout }) {
     setLoading(true);
     setDirections(null);
     setResult("");
-    setEndDate("");                                      // ★ リセット
+    setEndDate("");
     setLocations([]);
     setSpotPhotos([]);
 
@@ -135,7 +141,9 @@ function AppContent({ user, onLogout }) {
       if (res.ok) {
         setResult(data.plan);
         setEndDate(data.endDate);
+
         if (stayType === "宿泊") setHotelLocation(data.hotelLocation || stayLocation || plan); // ← これに置き換え
+
         calculateRoute(data.plan);
 
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
@@ -155,13 +163,58 @@ function AppContent({ user, onLogout }) {
     }
   };
 
-  // ★ 保存ボタンを押したときの処理
+  // ★ 追加要望でプランを再生成
+  const handleRefine = async (feedback) => {
+    setRefineLoading(true);
+    setDirections(null);
+    setLocations([]);     // ★ prevKeyリセットのため先に空にする
+    setSpotPhotos([]);
+
+    try {
+      const res = await fetch("http://localhost:3000/refine-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalPlan: result,
+          feedback,
+          startDate: startDate.toISOString().split("T")[0],
+          endDate,
+          stayType,
+          nights,
+          stayLocation,
+          lang,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setResult(data.plan);
+        setEndDate(data.endDate);
+        calculateRoute(data.plan);
+        const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
+        if (match) {
+          const parsed = match[1].split(",").map((s) => s.trim());
+          setLocations(parsed);   // ★ [] → parsed の変化でPhotoGalleryが再取得
+        }
+      } else {
+        alert(data.error || "再生成に失敗しました");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("再生成に失敗しました");
+    } finally {
+      setRefineLoading(false);
+    }
+  };
+
+  // 保存
   const handleSave = () => {
     savePlan({
       title: plan,
       plan: result,
       startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate,
+      endDate,
       nights,
       stayLocation,
     });
@@ -255,12 +308,24 @@ function AppContent({ user, onLogout }) {
 
       <hr />
 
-      {/* 写真取得 + 親に渡す（ギャラリー表示はしない） */}
       <PhotoGallery locations={locations} onPhotosLoaded={setSpotPhotos} />
 
-      {/* プランテキスト＋場所ごとの写真をインライン表示 */}
       <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
 
+
+      {/* ★ プラン生成後にのみ表示 */}
+      {result && (
+        <>
+          {refineLoading && <LoadingCat />}
+          <RefinePlan onRefine={handleRefine} loading={refineLoading} />
+          <SavePlanButton
+            onSave={handleSave}
+            saving={saving}
+            saveSuccess={saveSuccess}
+            disabled={!result}
+          />
+        </>
+      )}
 
       <HotelList
       hotelLocation={hotelLocation}
@@ -274,7 +339,6 @@ function AppContent({ user, onLogout }) {
         disabled={!result}
       />
 
-      {/* ★ 保存済みプラン一覧 */}
       <MyPlans
         plans={plans}
         loading={plansLoading}

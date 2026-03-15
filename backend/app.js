@@ -19,8 +19,14 @@ import connectDB from "./db.js";
 import planRouter from "./routes/planRoute.js";
 
 
+//わがまま追加
+import refinePlanRouter from "./routes/refinePlanRoute.js";
+
+=======
+
 //ホテル
 import hotelRouter from "./routes/hotelRoute.js";
+
 dotenv.config();
 
 
@@ -42,8 +48,13 @@ app.use("/url-enrich", urlEnrichRoutes);
 //プラン保存
 app.use("/plans", planRouter);
 
+
+//追加のわがまま
+app.use("/refine-plan", refinePlanRouter);
+=======
 //ホテル
 app.use("/api/hotels", hotelRouter);
+
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
