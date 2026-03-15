@@ -7,7 +7,11 @@ function App({ onLoginSuccess }) {
 
     return (
         <div style={{ maxWidth: "400px", margin: "2rem auto" }}>
-            {isLogin ? <LoginForm onLoginSuccess={onLoginSuccess} /> : <RegisterForm onRegisterSuccess={() => setIsLogin(true)} />}
+            {isLogin ? (
+                    <LoginForm onLoginSuccess={(user) => onLoginSuccess(user)} />
+                ) : (
+                    <RegisterForm onRegisterSuccess={() => setIsLogin(true)} />
+                )}
             <p>
                 {isLogin ? "Don't have an account?" : "Already have an account?"}
                 <button onClick={() => setIsLogin(!isLogin)} style={{ marginLeft: "0.5rem" }}>
