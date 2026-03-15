@@ -1,10 +1,7 @@
-import express from "express";
-const app = express();
+import { PrismaClient } from "./generated/prisma/client";
 
-app.get("/", (req,res)=>{
-  res.send("OK");
-});
+const prisma = new PrismaClient();
 
-app.listen(3000, ()=>{
-  console.log("server running on 3000");
-});
+const users = await prisma.user.findMany();
+
+console.log(users);
