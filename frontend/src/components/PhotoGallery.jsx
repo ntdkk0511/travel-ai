@@ -1,5 +1,6 @@
 // PhotoGallery.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { API_BASE } from "../api.js";
 
 const styles = {
     wrapper: { marginTop: "28px" },
@@ -135,7 +136,7 @@ function PlaceCard({ name, photoUrl, address }) {
 export default function PhotoGallery({ locations, onPhotosLoaded }) {
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [prevKey, setPrevKey] = useState("");
+    const prevKeyRef = useRef("");
 
     injectKeyframes();
 
@@ -146,14 +147,14 @@ export default function PhotoGallery({ locations, onPhotosLoaded }) {
         }
 
         const key = locations.join(",");
-        if (key === prevKey) return;
-        queueMicrotask(() => setPrevKey(key));
+        if (key === prevKeyRef.current) return;
+        prevKeyRef.current = key;
 
         console.log(">>> [PhotoGallery] 写真取得開始:", locations);
         queueMicrotask(() => setLoading(true));
         queueMicrotask(() => setPhotos([]));
 
-        fetch("http://localhost:3000/api/photos", {
+        fetch(`${API_BASE}/api/photos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ locations }),
@@ -168,7 +169,7 @@ export default function PhotoGallery({ locations, onPhotosLoaded }) {
             })
             .catch((err) => console.error("PhotoGallery 写真取得エラー:", err))
             .finally(() => setLoading(false));
-    }, [locations]);
+    }, [locations, onPhotosLoaded]);
 
     if (!locations || locations.length === 0) return null;
 

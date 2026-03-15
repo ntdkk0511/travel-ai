@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import App from './App.jsx'
 import Test from './test.jsx'
-// 認証の追加
 import axios from 'axios';
-// 認証の機能のファイル
+import { API_BASE } from './api.js';
 export default function Root() {
   const [isLoggedIn, setIsLoggedIn] = useState(null); // null = 読み込み中
   const [user, setUser] = useState(null); // 認証済みユーザー情報
@@ -15,7 +14,7 @@ export default function Root() {
       return;
     }
 
-    axios.get("http://localhost:3000/auth/check-token", {
+    axios.get(`${API_BASE}/auth/check-token`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {

@@ -24,7 +24,7 @@ import { usePlans } from "./hooks/usePlans";
 
 // ★ 追加要望
 import RefinePlan from "./components/RefinePlan";
-
+import { API_BASE } from "./api.js";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -128,7 +128,7 @@ function AppContent({ user, onLogout }) {
       }
       Object.assign(bodyData, getBudgetForRequest(stayType, nights)); // 予算（日帰り・宿泊共通）
 
-      const res = await fetch("http://localhost:3000/generate", {
+      const res = await fetch(`${API_BASE}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
@@ -168,7 +168,7 @@ function AppContent({ user, onLogout }) {
     setSpotPhotos([]);
 
     try {
-      const res = await fetch("http://localhost:3000/refine-plan", {
+      const res = await fetch(`${API_BASE}/refine-plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

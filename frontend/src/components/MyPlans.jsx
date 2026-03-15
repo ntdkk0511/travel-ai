@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE = "http://localhost:3000";
+import { API_BASE } from "../api.js";
 
 export default function MyPlans({ plans, loading, onFetch, onDelete, user }) {
   const [open, setOpen] = useState(false);

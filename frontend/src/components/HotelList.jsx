@@ -2,6 +2,7 @@
 // 宿泊地周辺のホテルを観光地写真と同じカード形式で表示するコンポーネント
 
 import { useEffect, useState } from "react";
+import { API_BASE } from "../api.js";
 
 export default function HotelList({ hotelLocation, stayType }) {
   const [hotels, setHotels] = useState([]);
@@ -17,7 +18,7 @@ export default function HotelList({ hotelLocation, stayType }) {
       setHotels([]);
 
       try {
-        const res = await fetch("http://localhost:3000/api/hotels", {
+        const res = await fetch(`${API_BASE}/api/hotels`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ stayLocation: hotelLocation }),

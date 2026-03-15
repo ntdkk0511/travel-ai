@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE } from "../api.js";
 
 export default function LoginForm({ onLoginSuccess }) {
     const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export default function LoginForm({ onLoginSuccess }) {
         e.preventDefault();
         setError("");
         try {
-            const response = await axios.post("http://localhost:3000/auth/login", {
+            const response = await axios.post(`${API_BASE}/auth/login`, {
                 email, password
             });
             console.log("response.data:",response.data);

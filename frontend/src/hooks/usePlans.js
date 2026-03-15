@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-
-const API_BASE = "http://localhost:3000";
+import { API_BASE } from "../api.js";
 
 export function usePlans(userId) {
   const [plans, setPlans] = useState([]);
