@@ -13,7 +13,9 @@
 
 // export default connectDB;
 import mongoose from "mongoose";
+import { setServers } from "node:dns/promises";
 
+setServers(["1.1.1.1", "8.8.8.8"]);
 const connectDB = async () => {
   console.log("MONGO_URI の値:", process.env.MONGO_URI); // ← 追加
   try {
