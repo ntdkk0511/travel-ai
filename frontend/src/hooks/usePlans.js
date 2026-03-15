@@ -15,7 +15,7 @@ export function usePlans(userId) {
       setSaving(true);
       setSaveSuccess(false);
       try {
-        const res = await fetch(`${API_BASE}/plans`, {
+        const res = await fetch(`${API_BASE}/api/plans`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, title, plan, startDate, endDate, nights, stayLocation }),
@@ -38,7 +38,7 @@ export function usePlans(userId) {
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/plans/${userId}`);
+      const res = await fetch(`${API_BASE}/api/plans/${userId}`);
       const data = await res.json();
       setPlans(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -51,7 +51,7 @@ export function usePlans(userId) {
   // プランを削除する
   const deletePlan = useCallback(async (planId) => {
     try {
-      await fetch(`${API_BASE}/plans/${planId}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/api/plans/${planId}`, { method: "DELETE" });
       setPlans((prev) => prev.filter((p) => p.id !== planId));
     } catch (err) {
       console.error("削除エラー:", err);
