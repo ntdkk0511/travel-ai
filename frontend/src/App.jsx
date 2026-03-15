@@ -6,13 +6,24 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 import PhotoGallery from "./components/PhotoGallery";
 import PlanWithLinks from "./PlanWithLinks";
 
-//cat
+// cat
 import LoadingCat from "./LoadingCat";
+
 
 // 予算
 import HotelBudgetInput from "./components/HotelBudgetInput";
 import TripBudgetInput from "./components/TripBudgetInput";
 import { useHotelBudget } from "./components/useHotelBudget";
+
+// プラン保存・一覧
+import SavePlanButton from "./components/SavePlanButton";
+
+//ホテル
+import HotelList from "./components/HotelList";
+
+import MyPlans from "./components/MyPlans";
+import { usePlans } from "./hooks/usePlans";
+
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -35,10 +46,16 @@ function AppContent({ user, onLogout }) {
   const [nights, setNights] = useState(1);
   const [stayLocation, setStayLocation] = useState("");
   const [result, setResult] = useState("");
+  const [endDate, setEndDate] = useState("");           // ★ 追加
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
-  const [spotPhotos, setSpotPhotos] = useState([]); // 写真データをここで管理
+  const [spotPhotos, setSpotPhotos] = useState([]);
+
+  //ホテル
+  const [hotelLocation, setHotelLocation] = useState("");
+  // ★ プラン保存フック（user.id を渡す）
+  const { plans, saving, loading: plansLoading, saveSuccess, savePlan, fetchPlans, deletePlan } = usePlans(user?.id);
 
   // 予算
   const { hotelBudget, setHotelBudget, totalBudget, setTotalBudget, getBudgetForRequest } = useHotelBudget();
@@ -89,9 +106,12 @@ function AppContent({ user, onLogout }) {
     setLoading(true);
     setDirections(null);
     setResult("");
+    setEndDate("");                                      // ★ リセット
     setLocations([]);
-    setSpotPhotos([]); // 前回の写真もリセット
+    setSpotPhotos([]);
 
+    //ホテル
+    setHotelLocation("");
     const start = startDate.toISOString().split("T")[0];
 
     try {
@@ -114,7 +134,10 @@ function AppContent({ user, onLogout }) {
 
       if (res.ok) {
         setResult(data.plan);
+        setEndDate(data.endDate);
+        if (stayType === "宿泊") setHotelLocation(data.hotelLocation || stayLocation || plan); // ← これに置き換え
         calculateRoute(data.plan);
+
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
           const parsed = match[1].split(",").map((s) => s.trim());
@@ -130,6 +153,18 @@ function AppContent({ user, onLogout }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ★ 保存ボタンを押したときの処理
+  const handleSave = () => {
+    savePlan({
+      title: plan,
+      plan: result,
+      startDate: startDate.toISOString().split("T")[0],
+      endDate: endDate,
+      nights,
+      stayLocation,
+    });
   };
 
   return (
@@ -206,10 +241,10 @@ function AppContent({ user, onLogout }) {
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? t("travel.generating") : t("travel.generate")}
         </button>
-        
       </div>
+
       {loading && <LoadingCat />}
-      
+
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
@@ -225,6 +260,27 @@ function AppContent({ user, onLogout }) {
 
       {/* プランテキスト＋場所ごとの写真をインライン表示 */}
       <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
+
+
+      <HotelList
+      hotelLocation={hotelLocation}
+      stayType={stayType}
+      />
+      {/* ★ 保存ボタン（プランが生成されたときだけ表示） */}
+      <SavePlanButton
+        onSave={handleSave}
+        saving={saving}
+        saveSuccess={saveSuccess}
+        disabled={!result}
+      />
+
+      {/* ★ 保存済みプラン一覧 */}
+      <MyPlans
+        plans={plans}
+        loading={plansLoading}
+        onFetch={fetchPlans}
+        onDelete={deletePlan}
+      />
     </div>
   );
 }
