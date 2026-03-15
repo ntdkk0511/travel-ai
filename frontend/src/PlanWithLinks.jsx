@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { API_BASE } from "./api.js";
 
 export default function PlanWithLinks({ result, locations, photos }) {
   const [urlMap, setUrlMap] = useState({});
@@ -9,7 +10,7 @@ export default function PlanWithLinks({ result, locations, photos }) {
 
     const fetchUrls = async () => {
       try {
-        const res = await fetch("http://localhost:3000/url-enrich", {
+        const res = await fetch(`${API_BASE}/url-enrich`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ locations }),
