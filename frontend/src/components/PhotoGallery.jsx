@@ -1,12 +1,8 @@
 // PhotoGallery.jsx
-// locations配列を受け取り、Google Places APIで写真を取得してギャラリー表示
-
 import { useState, useEffect } from "react";
 
 const styles = {
-    wrapper: {
-        marginTop: "28px",
-    },
+    wrapper: { marginTop: "28px" },
     heading: {
         fontSize: "13px",
         fontWeight: "700",
@@ -41,19 +37,9 @@ const styles = {
         alignItems: "center",
         justifyContent: "center",
     },
-    img: {
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        display: "block",
-    },
-    noImg: {
-        fontSize: "28px",
-        color: "#bbb",
-    },
-    label: {
-        padding: "8px 10px 10px",
-    },
+    img: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
+    noImg: { fontSize: "28px", color: "#bbb" },
+    label: { padding: "8px 10px 10px" },
     name: {
         fontSize: "13px",
         fontWeight: "600",
@@ -73,7 +59,6 @@ const styles = {
     },
 };
 
-// shimmerアニメーション用のグローバルスタイル（一度だけ注入）
 const injectKeyframes = (() => {
     let injected = false;
     return () => {
@@ -120,12 +105,7 @@ function PlaceCard({ name, photoUrl, address }) {
         >
             <div style={styles.imgWrapper}>
                 {photoUrl && !imgError ? (
-                    <img
-                        src={photoUrl}
-                        alt={name}
-                        style={styles.img}
-                        onError={() => setImgError(true)}
-                    />
+                    <img src={photoUrl} alt={name} style={styles.img} onError={() => setImgError(true)} />
                 ) : (
                     <span style={styles.noImg}>🗺️</span>
                 )}
@@ -141,9 +121,10 @@ function PlaceCard({ name, photoUrl, address }) {
 /**
  * PhotoGallery
  * Props:
- *   locations {string[]} - 場所名の配列（例: ["京都駅", "清水寺", "八坂神社"]）
+ *   locations {string[]}        - 場所名の配列
+ *   onPhotosLoaded {function}   - 写真データ取得後に呼ばれるコールバック
  */
-export default function PhotoGallery({ locations }) {
+export default function PhotoGallery({ locations, onPhotosLoaded }) {
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [prevKey, setPrevKey] = useState("");
@@ -156,13 +137,11 @@ export default function PhotoGallery({ locations }) {
             return;
         }
 
-        // 同じ配列なら再取得しない
         const key = locations.join(",");
         if (key === prevKey) return;
         setPrevKey(key);
 
         console.log(">>> [PhotoGallery] 写真取得開始:", locations);
-
         setLoading(true);
         setPhotos([]);
 
@@ -173,8 +152,11 @@ export default function PhotoGallery({ locations }) {
         })
             .then((res) => res.json())
             .then((data) => {
-                console.log(">>> [PhotoGallery] 取得結果:", data);
-                if (data.photos) setPhotos(data.photos);
+                if (data.photos) {
+                    setPhotos(data.photos);
+                    // 親コンポーネント（App.jsx）に写真データを渡す
+                    if (onPhotosLoaded) onPhotosLoaded(data.photos);
+                }
             })
             .catch((err) => console.error("PhotoGallery 写真取得エラー:", err))
             .finally(() => setLoading(false));
@@ -187,9 +169,7 @@ export default function PhotoGallery({ locations }) {
             <p style={styles.heading}>📍 スポット写真</p>
             <div style={styles.grid}>
                 {loading
-                    ? Array.from({ length: locations.length || 4 }).map((_, i) => (
-                        <SkeletonCard key={i} />
-                    ))
+                    ? Array.from({ length: locations.length || 4 }).map((_, i) => <SkeletonCard key={i} />)
                     : photos.map((p, i) => (
                         <PlaceCard key={i} name={p.name} photoUrl={p.photoUrl} address={p.address} />
                     ))}

@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import ReactMarkdown from "react-markdown";
 import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
 
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
@@ -31,6 +30,7 @@ function AppContent({ user, onLogout }) {
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [spotPhotos, setSpotPhotos] = useState([]); // 写真データをここで管理
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -40,16 +40,12 @@ function AppContent({ user, onLogout }) {
   const calculateRoute = useCallback(
     (text) => {
       if (!isLoaded) return;
-
       const match = text.match(/Locations:\s*\[(.*?)\]/);
       if (!match) return;
-
-      // ローカル変数名を routeLocations に変更（state の locations と競合しないように）
       const routeLocations = match[1].split(",").map((s) => s.trim());
       if (routeLocations.length < 2) return;
 
       const directionsService = new window.google.maps.DirectionsService();
-
       directionsService.route(
         {
           origin: routeLocations[0],
@@ -74,7 +70,6 @@ function AppContent({ user, onLogout }) {
       alert(t("travel.inputError"));
       return;
     }
-
     if (stayType === "宿泊" && (!nights || nights < 1)) {
       alert(t("travel.nightsError"));
       return;
@@ -83,21 +78,15 @@ function AppContent({ user, onLogout }) {
     setLoading(true);
     setDirections(null);
     setResult("");
-    setLocations([]); // 前回の写真をリセット
+    setLocations([]);
+    setSpotPhotos([]); // 前回の写真もリセット
 
     const start = startDate.toISOString().split("T")[0];
 
     try {
-      const bodyData = {
-        prompt: plan,
-        startDate: start,
-        stayType,
-        lang,
-      };
-
+      const bodyData = { prompt: plan, startDate: start, stayType, lang };
       if (startLocation) bodyData.startLocation = startLocation;
       if (time) bodyData.time = time;
-
       if (stayType === "宿泊") {
         bodyData.nights = nights;
         if (stayLocation) bodyData.stayLocation = stayLocation;
@@ -114,8 +103,6 @@ function AppContent({ user, onLogout }) {
       if (res.ok) {
         setResult(data.plan);
         calculateRoute(data.plan);
-
-        // setLocations を最後に呼ぶ（calculateRoute との変数競合を避けるため）
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
           const parsed = match[1].split(",").map((s) => s.trim());
@@ -132,8 +119,6 @@ function AppContent({ user, onLogout }) {
       setLoading(false);
     }
   };
-
-  console.log("App user:", user);
 
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
@@ -169,11 +154,7 @@ function AppContent({ user, onLogout }) {
       </div>
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
-        <select
-          value={stayType}
-          onChange={(e) => setStayType(e.target.value)}
-          style={{ padding: "10px" }}
-        >
+        <select value={stayType} onChange={(e) => setStayType(e.target.value)} style={{ padding: "10px" }}>
           <option value="日帰り">{t("travel.dayTrip")}</option>
           <option value="宿泊">{t("travel.overnight")}</option>
         </select>
@@ -220,11 +201,11 @@ function AppContent({ user, onLogout }) {
 
       <hr />
 
-      <PhotoGallery locations={locations} />
+      {/* 写真取得 + 親に渡す（ギャラリー表示はしない） */}
+      <PhotoGallery locations={locations} onPhotosLoaded={setSpotPhotos} />
 
-      <div style={{ marginTop: "20px" }}>
-        <PlanWithLinks result={result} locations={locations} />
-      </div>
+      {/* プランテキスト＋場所ごとの写真をインライン表示 */}
+      <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
     </div>
   );
 }
