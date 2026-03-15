@@ -5,6 +5,9 @@ import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-map
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 
+//URL下
+import PlanWithLinks from "./PlanWithLinks";
+
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const containerStyle = {
@@ -28,6 +31,8 @@ function AppContent({user,onLogout}) {
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  //URL下
+  const [locations, setLocations] = useState([]);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
@@ -107,6 +112,8 @@ function AppContent({user,onLogout}) {
 
       if (res.ok) {
         setResult(data.plan);
+        const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
+        if (match) setLocations(match[1].split(",").map((s) => s.trim()));
         calculateRoute(data.plan);
       } else {
         setResult(data.error || t("travel.generalError"));
@@ -206,7 +213,8 @@ function AppContent({user,onLogout}) {
       <hr />
 
       <div style={{ marginTop: "20px" }}>
-        <ReactMarkdown>{result}</ReactMarkdown>
+        
+        <PlanWithLinks result={result} locations={locations} />
       </div>
     </div>
   );
