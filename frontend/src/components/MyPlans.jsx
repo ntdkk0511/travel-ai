@@ -17,7 +17,7 @@ export default function MyPlans({ plans, loading, onFetch, onDelete, user }) {
   const handlePost = async (p) => {
     if (!comment.trim()) return;
     try {
-      const res = await fetch(`${API_BASE}/posts`, {
+      const res = await fetch(`${API_BASE}/api/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

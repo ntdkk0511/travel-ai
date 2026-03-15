@@ -339,6 +339,7 @@ function AppContent({ user, onLogout }) {
       />
 
       <MyPlans
+        user={user}
         plans={plans}
         loading={plansLoading}
         onFetch={fetchPlans}
