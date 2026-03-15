@@ -331,6 +331,7 @@ function AppContent({ user, onLogout }) {
       stayType={stayType}
       />
       <MyPlans
+        user={user}
         plans={plans}
         loading={plansLoading}
         onFetch={fetchPlans}

@@ -54,6 +54,8 @@ app.use("/api/hotels", hotelRouter);
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+app.use("/api/posts", postRoutes)
+
 
 // 言語コードを自然言語の指示文に変換
 const LANG_INSTRUCTIONS = {
