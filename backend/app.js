@@ -6,6 +6,9 @@ import { addDays, parseISO, format } from "date-fns";
 import UserRoutes from "./routes/UserRoute.js";
 import authRoutes from "./routes/AuthRoute.js";
 import languageRouter from "./routes/language.js";
+//写真追加
+import photoRouter from "./routes/photoRoute.js";
+
 
 dotenv.config();
 
@@ -17,6 +20,7 @@ app.use(cors());
 app.use("/auth", authRoutes);
 app.use("/users", UserRoutes);
 app.use("/api/language", languageRouter);
+app.use("/api/photos", photoRouter);
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

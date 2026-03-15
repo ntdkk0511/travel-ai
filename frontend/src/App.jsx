@@ -4,6 +4,9 @@ import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-map
 
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import LanguageSwitcher from "./components/LanguageSwitcher";
+//写真追加
+import PhotoGallery from "./components/PhotoGallery";
+
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -197,6 +200,8 @@ function AppContent() {
       )}
 
       <hr />
+
+      <PhotoGallery planText={result} />
 
       <div style={{ marginTop: "20px" }}>
         <ReactMarkdown>{result}</ReactMarkdown>
