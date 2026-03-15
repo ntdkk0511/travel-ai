@@ -11,6 +11,10 @@ import LoadingCat from "./LoadingCat";
 
 // プラン保存・一覧
 import SavePlanButton from "./components/SavePlanButton";
+
+//ホテル
+import HotelList from "./components/HotelList";
+
 import MyPlans from "./components/MyPlans";
 import { usePlans } from "./hooks/usePlans";
 
@@ -41,6 +45,8 @@ function AppContent({ user, onLogout }) {
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]);
 
+  //ホテル
+  const [hotelLocation, setHotelLocation] = useState("");
   // ★ プラン保存フック（user.id を渡す）
   const { plans, saving, loading: plansLoading, saveSuccess, savePlan, fetchPlans, deletePlan } = usePlans(user?.id);
 
@@ -94,6 +100,8 @@ function AppContent({ user, onLogout }) {
     setLocations([]);
     setSpotPhotos([]);
 
+    //ホテル
+    setHotelLocation("");
     const start = startDate.toISOString().split("T")[0];
 
     try {
@@ -115,8 +123,10 @@ function AppContent({ user, onLogout }) {
 
       if (res.ok) {
         setResult(data.plan);
-        setEndDate(data.endDate);                        // ★ 追加
+        setEndDate(data.endDate);
+        if (stayType === "宿泊") setHotelLocation(data.hotelLocation || stayLocation || plan); // ← これに置き換え
         calculateRoute(data.plan);
+
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
           const parsed = match[1].split(",").map((s) => s.trim());
@@ -235,6 +245,11 @@ function AppContent({ user, onLogout }) {
       {/* プランテキスト＋場所ごとの写真をインライン表示 */}
       <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
 
+
+      <HotelList
+      hotelLocation={hotelLocation}
+      stayType={stayType}
+      />
       {/* ★ 保存ボタン（プランが生成されたときだけ表示） */}
       <SavePlanButton
         onSave={handleSave}
