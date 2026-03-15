@@ -8,6 +8,9 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 import PhotoGallery from "./components/PhotoGallery";
 
 
+//URL下
+import PlanWithLinks from "./PlanWithLinks";
+
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const containerStyle = {
@@ -18,10 +21,8 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-
-function AppContent() {
+function AppContent({user,onLogout}) {
   const { t, lang } = useLanguage(); // lang を追加で取得
-
   const [plan, setPlan] = useState("");
   const [startLocation, setStartLocation] = useState("");
   const [time, setTime] = useState("");
@@ -33,6 +34,8 @@ function AppContent() {
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  //URL下
+  const [locations, setLocations] = useState([]);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
@@ -112,6 +115,8 @@ function AppContent() {
 
       if (res.ok) {
         setResult(data.plan);
+        const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
+        if (match) setLocations(match[1].split(",").map((s) => s.trim()));
         calculateRoute(data.plan);
       } else {
         setResult(data.error || t("travel.generalError"));
@@ -123,9 +128,16 @@ function AppContent() {
       setLoading(false);
     }
   };
-
+  console.log("App user:", user);
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
+      {user && (
+        <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
+          ログアウト
+        </button>
+      )}
+    </header>
       <h1>{t("travel.title")}</h1>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
@@ -150,6 +162,8 @@ function AppContent() {
       </div>
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
+
+        {/* 日帰り / 宿泊 */}
         <select
           value={stayType}
           onChange={(e) => setStayType(e.target.value)}
@@ -204,19 +218,20 @@ function AppContent() {
       <PhotoGallery planText={result} />
 
       <div style={{ marginTop: "20px" }}>
-        <ReactMarkdown>{result}</ReactMarkdown>
+        
+        <PlanWithLinks result={result} locations={locations} />
       </div>
     </div>
   );
 }
 
-export default function App() {
+export default function App({user,onLogout}) {
   return (
     <LanguageProvider>
       <header style={{ display: "flex", justifyContent: "flex-end", padding: "12px 16px" }}>
         <LanguageSwitcher />
       </header>
-      <AppContent />
+    <AppContent user={user} onLogout={onLogout} />
     </LanguageProvider>
   );
 }

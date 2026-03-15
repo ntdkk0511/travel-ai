@@ -10,6 +10,9 @@ import languageRouter from "./routes/language.js";
 import photoRouter from "./routes/photoRoute.js";
 
 
+//URL下
+import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
+
 dotenv.config();
 
 const app = express();
@@ -21,6 +24,9 @@ app.use("/auth", authRoutes);
 app.use("/users", UserRoutes);
 app.use("/api/language", languageRouter);
 app.use("/api/photos", photoRouter);
+
+//URL下
+app.use("/url-enrich", urlEnrichRoutes);
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
