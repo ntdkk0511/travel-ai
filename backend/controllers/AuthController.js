@@ -3,16 +3,35 @@
 // routine -> controller -> service
 
 import AuthService from "../services/AuthService.js";
+import jwt from "jsonwebtoken";
 
-class AuthController{
-    static login(req,res){
+// uscase ??
+
+class AuthController {
+    static login(req, res) {
         const { email, password } = req.body;
 
-        const result = AuthService.login(email,password);
-        if(!result){
-          return res.status(401).json({message:"login failed"});
+        const result = AuthService.login(email, password);
+        if (!result) {
+            return res.status(401).json({ message: "login failed" });
         }
         res.json(result);
+    }
+    //token のチェックをしている。
+    static checkToken(req, res) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ message: "No token" });
+
+        const token = authHeader.split(" ")[1];
+        console.log(res.data); // Root.jsx の then 内で
+        console.log("token:" + token);
+        try {
+            const userData = AuthService.verifyToken(token);
+            return res.json({ user: userData });
+        } catch (err) {
+            console.error("error:" + err);
+            return res.status(401).json({ message: "Invalid token" });
+        }
     }
 }
 
