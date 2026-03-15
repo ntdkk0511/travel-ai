@@ -18,6 +18,9 @@ import connectDB from "./db.js";
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
+//掲示板機能
+import postRoutes from "./routes/postRoutes.js";
+
 //わがまま追加
 import refinePlanRouter from "./routes/refinePlanRoute.js";
 
@@ -47,7 +50,6 @@ app.use("/refine-plan", refinePlanRouter);
 
 //ホテル
 app.use("/api/hotels", hotelRouter);
-
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -135,7 +137,7 @@ app.post("/generate", async (req, res) => {
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
-    
+
     const hotelLocationMatch = text.match(/宿泊[場所施設]*[：:]\s*([^\n。、]+)/);
 const extractedHotelLocation =
   stayLocation ||

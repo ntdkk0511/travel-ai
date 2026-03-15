@@ -60,8 +60,11 @@ class AuthService {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-
-    return { token, user };
+    // ✅ _id ではなく id に統一
+    return {
+      token,
+      user: { id: user._id, email: user.email, name: user.name }
+    };
   }
 
   static verifyToken(token) {

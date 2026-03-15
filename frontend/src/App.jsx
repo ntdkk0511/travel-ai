@@ -36,7 +36,7 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-
+const LIBRARIES = ["places"];
 function AppContent({ user, onLogout }) {
   const { t, lang } = useLanguage();
   const [plan, setPlan] = useState("");
@@ -65,7 +65,7 @@ function AppContent({ user, onLogout }) {
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
+    libraries:LIBRARIES,
   });
 
   const calculateRoute = useCallback(
@@ -207,6 +207,8 @@ function AppContent({ user, onLogout }) {
 
   // 保存
   const handleSave = () => {
+    console.log(">>> user:", user);        // ← 追加
+    console.log(">>> user._id:", user?.id); // ← 追加
     savePlan({
       title: plan,
       plan: result,
