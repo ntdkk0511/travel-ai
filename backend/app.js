@@ -9,14 +9,17 @@ import languageRouter from "./routes/language.js";
 //写真追加
 import photoRouter from "./routes/photoRoute.js";
 
-
 //URL下
 import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
+
+//データベース
+import connectDB from "./db.js";
 
 dotenv.config();
 
 const app = express();
-
+// ✅ 追加: MongoDB接続を実行
+connectDB();
 app.use(express.json());
 app.use(cors());
 
