@@ -36,7 +36,7 @@ export default function MyPlans({ plans, loading, onFetch, onDelete }) {
 
           {plans.map((p) => (
             <div
-              key={p.id}
+              key={p._id}
               style={{
                 border: "1px solid #ddd",
                 borderRadius: "8px",
@@ -58,7 +58,7 @@ export default function MyPlans({ plans, loading, onFetch, onDelete }) {
                     onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
                     style={{ fontSize: "12px", cursor: "pointer", padding: "4px 10px" }}
                   >
-                    {expandedId === p.id ? "閉じる" : "詳細"}
+                    {expandedId === p._id ? "閉じる" : "詳細"}
                   </button>
                   <button
                     onClick={() => onDelete(p.id)}

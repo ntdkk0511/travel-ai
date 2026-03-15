@@ -52,7 +52,7 @@ export function usePlans(userId) {
   const deletePlan = useCallback(async (planId) => {
     try {
       await fetch(`${API_BASE}/plans/${planId}`, { method: "DELETE" });
-      setPlans((prev) => prev.filter((p) => p.id !== planId));
+      setPlans((prev) => prev.filter((p) => p._id !== planId));
     } catch (err) {
       console.error("削除エラー:", err);
     }

@@ -21,7 +21,6 @@ import planRouter from "./routes/planRoute.js";
 
 //ホテル
 import hotelRouter from "./routes/hotelRoute.js";
-dotenv.config();
 
 
 
@@ -131,7 +130,7 @@ app.post("/generate", async (req, res) => {
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
-    
+
     const hotelLocationMatch = text.match(/宿泊[場所施設]*[：:]\s*([^\n。、]+)/);
 const extractedHotelLocation =
   stayLocation ||
