@@ -4,11 +4,7 @@ import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-map
 
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import LanguageSwitcher from "./components/LanguageSwitcher";
-//写真追加
 import PhotoGallery from "./components/PhotoGallery";
-
-
-//URL下
 import PlanWithLinks from "./PlanWithLinks";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -21,8 +17,9 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-function AppContent({user,onLogout}) {
-  const { t, lang } = useLanguage(); // lang を追加で取得
+
+function AppContent({ user, onLogout }) {
+  const { t, lang } = useLanguage();
   const [plan, setPlan] = useState("");
   const [startLocation, setStartLocation] = useState("");
   const [time, setTime] = useState("");
@@ -33,9 +30,8 @@ function AppContent({user,onLogout}) {
   const [result, setResult] = useState("");
   const [directions, setDirections] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  //URL下
   const [locations, setLocations] = useState([]);
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
@@ -48,16 +44,17 @@ function AppContent({user,onLogout}) {
       const match = text.match(/Locations:\s*\[(.*?)\]/);
       if (!match) return;
 
-      const locations = match[1].split(",").map((s) => s.trim());
-      if (locations.length < 2) return;
+      // ローカル変数名を routeLocations に変更（state の locations と競合しないように）
+      const routeLocations = match[1].split(",").map((s) => s.trim());
+      if (routeLocations.length < 2) return;
 
       const directionsService = new window.google.maps.DirectionsService();
 
       directionsService.route(
         {
-          origin: locations[0],
-          destination: locations[locations.length - 1],
-          waypoints: locations.slice(1, -1).map((loc) => ({
+          origin: routeLocations[0],
+          destination: routeLocations[routeLocations.length - 1],
+          waypoints: routeLocations.slice(1, -1).map((loc) => ({
             location: loc,
             stopover: true,
           })),
@@ -86,6 +83,7 @@ function AppContent({user,onLogout}) {
     setLoading(true);
     setDirections(null);
     setResult("");
+    setLocations([]); // 前回の写真をリセット
 
     const start = startDate.toISOString().split("T")[0];
 
@@ -94,7 +92,7 @@ function AppContent({user,onLogout}) {
         prompt: plan,
         startDate: start,
         stayType,
-        lang, // ← 現在の言語をバックエンドに送信
+        lang,
       };
 
       if (startLocation) bodyData.startLocation = startLocation;
@@ -115,9 +113,15 @@ function AppContent({user,onLogout}) {
 
       if (res.ok) {
         setResult(data.plan);
-        const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
-        if (match) setLocations(match[1].split(",").map((s) => s.trim()));
         calculateRoute(data.plan);
+
+        // setLocations を最後に呼ぶ（calculateRoute との変数競合を避けるため）
+        const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
+        if (match) {
+          const parsed = match[1].split(",").map((s) => s.trim());
+          console.log(">>> [App] setLocations:", parsed);
+          setLocations(parsed);
+        }
       } else {
         setResult(data.error || t("travel.generalError"));
       }
@@ -128,16 +132,19 @@ function AppContent({user,onLogout}) {
       setLoading(false);
     }
   };
+
   console.log("App user:", user);
+
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
-    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
-      {user && (
-        <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
-          ログアウト
-        </button>
-      )}
-    </header>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
+        {user && (
+          <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
+            ログアウト
+          </button>
+        )}
+      </header>
+
       <h1>{t("travel.title")}</h1>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
@@ -162,8 +169,6 @@ function AppContent({user,onLogout}) {
       </div>
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
-
-        {/* 日帰り / 宿泊 */}
         <select
           value={stayType}
           onChange={(e) => setStayType(e.target.value)}
@@ -215,23 +220,22 @@ function AppContent({user,onLogout}) {
 
       <hr />
 
-      <PhotoGallery planText={result} />
+      <PhotoGallery locations={locations} />
 
       <div style={{ marginTop: "20px" }}>
-        
         <PlanWithLinks result={result} locations={locations} />
       </div>
     </div>
   );
 }
 
-export default function App({user,onLogout}) {
+export default function App({ user, onLogout }) {
   return (
     <LanguageProvider>
       <header style={{ display: "flex", justifyContent: "flex-end", padding: "12px 16px" }}>
         <LanguageSwitcher />
       </header>
-    <AppContent user={user} onLogout={onLogout} />
+      <AppContent user={user} onLogout={onLogout} />
     </LanguageProvider>
   );
 }

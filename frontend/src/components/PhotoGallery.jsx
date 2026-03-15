@@ -1,5 +1,5 @@
 // PhotoGallery.jsx
-// 観光地の写真を取得してギャラリー表示するコンポーネント
+// locations配列を受け取り、Google Places APIで写真を取得してギャラリー表示
 
 import { useState, useEffect } from "react";
 
@@ -71,32 +71,6 @@ const styles = {
         overflow: "hidden",
         textOverflow: "ellipsis",
     },
-    skeleton: {
-        borderRadius: "10px",
-        overflow: "hidden",
-        background: "#f0f0f0",
-        animation: "pulse 1.5s ease-in-out infinite",
-    },
-    skeletonImg: {
-        width: "100%",
-        height: "130px",
-        background: "linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%)",
-        backgroundSize: "200% 100%",
-        animation: "shimmer 1.5s infinite",
-    },
-    skeletonText: {
-        height: "12px",
-        margin: "10px 10px 6px",
-        borderRadius: "4px",
-        background: "#e0e0e0",
-    },
-    skeletonTextShort: {
-        height: "10px",
-        margin: "0 10px 10px",
-        width: "60%",
-        borderRadius: "4px",
-        background: "#e8e8e8",
-    },
 };
 
 // shimmerアニメーション用のグローバルスタイル（一度だけ注入）
@@ -116,12 +90,20 @@ const injectKeyframes = (() => {
     };
 })();
 
+const skeletonImgStyle = {
+    width: "100%",
+    height: "130px",
+    background: "linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%)",
+    backgroundSize: "200% 100%",
+    animation: "shimmer 1.5s infinite",
+};
+
 function SkeletonCard() {
     return (
-        <div style={styles.skeleton}>
-            <div style={styles.skeletonImg} />
-            <div style={styles.skeletonText} />
-            <div style={styles.skeletonTextShort} />
+        <div style={{ borderRadius: "10px", overflow: "hidden", background: "#f0f0f0" }}>
+            <div style={skeletonImgStyle} />
+            <div style={{ height: "12px", margin: "10px 10px 6px", borderRadius: "4px", background: "#e0e0e0" }} />
+            <div style={{ height: "10px", margin: "0 10px 10px", width: "60%", borderRadius: "4px", background: "#e8e8e8" }} />
         </div>
     );
 }
@@ -159,41 +141,28 @@ function PlaceCard({ name, photoUrl, address }) {
 /**
  * PhotoGallery
  * Props:
- *   planText {string} - AIが生成した旅行プランのテキスト（Locations:[...] 行を含む）
+ *   locations {string[]} - 場所名の配列（例: ["京都駅", "清水寺", "八坂神社"]）
  */
-export default function PhotoGallery({ planText }) {
+export default function PhotoGallery({ locations }) {
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [locationNames, setLocationNames] = useState([]);
+    const [prevKey, setPrevKey] = useState("");
 
     injectKeyframes();
 
     useEffect(() => {
-        if (!planText) {
+        if (!locations || locations.length === 0) {
             setPhotos([]);
-            setLocationNames([]);
             return;
         }
 
-        // planTextからLocations:[...] 行をパース
-        const match = planText.match(/Locations:\s*\[(.*?)\]/);
-        if (!match) {
-            setPhotos([]);
-            setLocationNames([]);
-            return;
-        }
+        // 同じ配列なら再取得しない
+        const key = locations.join(",");
+        if (key === prevKey) return;
+        setPrevKey(key);
 
-        const locations = match[1]
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+        console.log(">>> [PhotoGallery] 写真取得開始:", locations);
 
-        if (locations.length === 0) return;
-
-        // 前回と同じ場所リストなら再取得しない
-        if (JSON.stringify(locations) === JSON.stringify(locationNames)) return;
-
-        setLocationNames(locations);
         setLoading(true);
         setPhotos([]);
 
@@ -204,30 +173,25 @@ export default function PhotoGallery({ planText }) {
         })
             .then((res) => res.json())
             .then((data) => {
+                console.log(">>> [PhotoGallery] 取得結果:", data);
                 if (data.photos) setPhotos(data.photos);
             })
-            .catch((err) => console.error("写真取得エラー:", err))
+            .catch((err) => console.error("PhotoGallery 写真取得エラー:", err))
             .finally(() => setLoading(false));
-    }, [planText]);
+    }, [locations]);
 
-    if (!planText) return null;
-
-    const hasLocations = planText.match(/Locations:\s*\[/);
-    if (!hasLocations) return null;
+    if (!locations || locations.length === 0) return null;
 
     return (
         <div style={styles.wrapper}>
             <p style={styles.heading}>📍 スポット写真</p>
             <div style={styles.grid}>
                 {loading
-                    ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+                    ? Array.from({ length: locations.length || 4 }).map((_, i) => (
+                        <SkeletonCard key={i} />
+                    ))
                     : photos.map((p, i) => (
-                        <PlaceCard
-                            key={i}
-                            name={p.name}
-                            photoUrl={p.photoUrl}
-                            address={p.address}
-                        />
+                        <PlaceCard key={i} name={p.name} photoUrl={p.photoUrl} address={p.address} />
                     ))}
             </div>
         </div>

@@ -5,36 +5,33 @@ import express from "express";
 
 const photoRouter = express.Router();
 
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+// GOOGLE_API_KEY は定数にせず、各関数内で process.env から取得する
+// （ESModuleではimport時に評価されるため、dotenv.config()より先に実行されてしまうのを防ぐ）
 
-/**
- * 場所名 → Place ID → 写真URL を取得するヘルパー
- */
 async function fetchPlacePhoto(placeName) {
+    const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
     try {
-        // Step 1: テキスト検索でPlace IDと写真リファレンスを取得
-        const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(placeName)}&inputtype=textquery&fields=place_id,name,photos,formatted_address&key=${GOOGLE_API_KEY}`;
+        const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(placeName)}&language=ja&key=${GOOGLE_API_KEY}`;
 
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
 
-        if (
-            searchData.status !== "OK" ||
-            !searchData.candidates ||
-            searchData.candidates.length === 0
-        ) {
+        console.log(`[Places API] ${placeName} → status: ${searchData.status}`);
+
+        if (searchData.status !== "OK" || !searchData.results || searchData.results.length === 0) {
+            console.warn(`[Places API] 結果なし (${placeName}): ${searchData.status} ${searchData.error_message || ""}`);
             return { name: placeName, photoUrl: null, address: null };
         }
 
-        const candidate = searchData.candidates[0];
-        const address = candidate.formatted_address || null;
+        const place = searchData.results[0];
+        const address = place.formatted_address || null;
 
-        if (!candidate.photos || candidate.photos.length === 0) {
+        if (!place.photos || place.photos.length === 0) {
+            console.warn(`[Places API] 写真なし (${placeName})`);
             return { name: placeName, photoUrl: null, address };
         }
 
-        // Step 2: 写真リファレンスから画像URLを生成
-        const photoRef = candidate.photos[0].photo_reference;
+        const photoRef = place.photos[0].photo_reference;
         const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${GOOGLE_API_KEY}`;
 
         return { name: placeName, photoUrl, address };
@@ -44,12 +41,8 @@ async function fetchPlacePhoto(placeName) {
     }
 }
 
-/**
- * POST /api/photos
- * Body: { locations: ["京都駅", "清水寺", ...] }
- * Response: { photos: [{ name, photoUrl, address }, ...] }
- */
 photoRouter.post("/", async (req, res) => {
+    const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
     const { locations } = req.body;
 
     if (!locations || !Array.isArray(locations) || locations.length === 0) {
@@ -57,18 +50,19 @@ photoRouter.post("/", async (req, res) => {
     }
 
     if (!GOOGLE_API_KEY) {
+        console.error("[photoRoute] GOOGLE_MAPS_API_KEY が未設定です");
         return res.status(500).json({ error: "Google Maps APIキーが設定されていません" });
     }
 
-    console.log(`>>> [写真取得] ${locations.length}件の場所を処理中...`);
+    console.log(`>>> [写真取得開始] ${locations.length}件: ${locations.join(", ")}`);
 
     try {
-        // 並列で全場所の写真を取得
         const photos = await Promise.all(locations.map(fetchPlacePhoto));
-        console.log(`>>> [写真取得完了] ${photos.filter((p) => p.photoUrl).length}件成功`);
+        const successCount = photos.filter((p) => p.photoUrl).length;
+        console.log(`>>> [写真取得完了] ${successCount}/${photos.length}件成功`);
         res.json({ photos });
     } catch (err) {
-        console.error("写真取得エラー:", err.message);
+        console.error("[photoRoute] 予期しないエラー:", err.message);
         res.status(500).json({ error: "写真の取得中にエラーが発生しました" });
     }
 });
