@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config(); // ← 一番最初に実行
 import cors from "cors";
 import express from "express";
-import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addDays, parseISO, format } from "date-fns";
 import UserRoutes from "./routes/UserRoute.js";
@@ -9,20 +10,30 @@ import languageRouter from "./routes/language.js";
 //写真追加
 import photoRouter from "./routes/photoRoute.js";
 
-
 //URL下
 import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
+//データベース
+import connectDB from "./db.js";
 
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
+
 //わがまま追加
 import refinePlanRouter from "./routes/refinePlanRoute.js";
 
+=======
+
+//ホテル
+import hotelRouter from "./routes/hotelRoute.js";
+
 dotenv.config();
 
-const app = express();
 
+
+const app = express();
+// ✅ 追加: MongoDB接続を実行
+connectDB();
 app.use(express.json());
 app.use(cors());
 
@@ -37,8 +48,13 @@ app.use("/url-enrich", urlEnrichRoutes);
 //プラン保存
 app.use("/plans", planRouter);
 
+
 //追加のわがまま
 app.use("/refine-plan", refinePlanRouter);
+=======
+//ホテル
+app.use("/api/hotels", hotelRouter);
+
 
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -53,7 +69,8 @@ const LANG_INSTRUCTIONS = {
 };
 
 app.post("/generate", async (req, res) => {
-  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, lang = "ja" } = req.body;
+  // ホテル予算・全体予算を追加
+  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, hotelBudget, totalBudget, activityBudget, lang = "ja" } = req.body;
 
   // 必須チェック
   if (!startDate || !stayType) {
@@ -74,7 +91,10 @@ app.post("/generate", async (req, res) => {
   if (stayType === "宿泊") {
     console.log(`宿泊日数: ${nights}`);
     if (stayLocation) console.log(`宿泊場所: ${stayLocation}`);
+    if (hotelBudget) console.log(`ホテル予算: ${hotelBudget}円`);
   }
+  if (totalBudget) console.log(`全体予算: ${totalBudget}円`);
+  if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -94,6 +114,13 @@ app.post("/generate", async (req, res) => {
     if (stayType === "宿泊") {
       richPrompt += `Number of nights: ${nights}\n`;
       if (stayLocation) richPrompt += `Stay location: ${stayLocation} (optional)\n`;
+      if (hotelBudget) richPrompt += `Hotel budget per night: approximately ${hotelBudget} yen (optional, suggest hotels within this range)\n`;
+    }
+    if (totalBudget && activityBudget !== undefined) {
+      richPrompt += `Total trip budget: ${totalBudget} yen\n`;
+      richPrompt += `Activity & food budget (excluding hotel): approximately ${activityBudget} yen (suggest spots and meals within this range)\n`;
+    } else if (totalBudget) {
+      richPrompt += `Total trip budget: approximately ${totalBudget} yen (suggest spots and meals within this range)\n`;
     }
     if (startLocation) richPrompt += `Departure location: ${startLocation} (optional)\n`;
     if (time) richPrompt += `Departure time: ${time} (optional)\n`;
@@ -115,14 +142,21 @@ app.post("/generate", async (req, res) => {
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
-    res.json({
-      plan: text,
-      startDate,
-      endDate: finalEndDate,
-      nights,
-      stayLocation: stayLocation || ""
-    });
+    
+    const hotelLocationMatch = text.match(/宿泊[場所施設]*[：:]\s*([^\n。、]+)/);
+const extractedHotelLocation =
+  stayLocation ||
+  (hotelLocationMatch ? hotelLocationMatch[1].trim() : null) ||
+  prompt;
 
+res.json({
+  plan: text,
+  startDate,
+  endDate: finalEndDate,
+  nights,
+  stayLocation: stayLocation || "",
+  hotelLocation: extractedHotelLocation
+});
   } catch (err) {
     console.error("--- [エラー発生] ---");
     console.error("Status:", err.status);
