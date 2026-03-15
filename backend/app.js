@@ -18,18 +18,11 @@ import connectDB from "./db.js";
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
-
 //わがまま追加
 import refinePlanRouter from "./routes/refinePlanRoute.js";
 
-=======
-
 //ホテル
 import hotelRouter from "./routes/hotelRoute.js";
-
-dotenv.config();
-
-
 
 const app = express();
 // ✅ 追加: MongoDB接続を実行
@@ -51,7 +44,7 @@ app.use("/plans", planRouter);
 
 //追加のわがまま
 app.use("/refine-plan", refinePlanRouter);
-=======
+
 //ホテル
 app.use("/api/hotels", hotelRouter);
 
