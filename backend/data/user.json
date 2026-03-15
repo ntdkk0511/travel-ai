@@ -28,5 +28,11 @@
     "name": "ai",
     "email": "ai@gmail.com",
     "password": "1234"
+  },
+  {
+    "id": "25250323-3fb7-494b-8a90-32c63b70f95f",
+    "name": "うた",
+    "email": "murakami20070711@gmail.com",
+    "password": "uta20070711"
   }
 ]
