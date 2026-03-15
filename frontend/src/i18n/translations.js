@@ -1,0 +1,208 @@
+// src/i18n/translations.js
+// 4言語の翻訳データを管理するファイル
+// 新しいキーを追加する場合は全言語に追加してください
+
+const translations = {
+  ja: {
+    // ナビゲーション
+    nav: {
+      home: "ホーム",
+      about: "について",
+      contact: "お問い合わせ",
+      settings: "設定",
+    },
+    // 共通UI
+    common: {
+      loading: "読み込み中...",
+      error: "エラーが発生しました",
+      save: "保存",
+      cancel: "キャンセル",
+      confirm: "確認",
+      close: "閉じる",
+      search: "検索",
+      submit: "送信",
+      back: "戻る",
+      next: "次へ",
+      yes: "はい",
+      no: "いいえ",
+    },
+    // ページタイトル・メッセージ
+    page: {
+      welcome: "ようこそ",
+      description: "言語を選択してください",
+    },
+    // 言語切替UI
+    language: {
+      label: "言語",
+      ja: "日本語",
+      en: "英語",
+      zh: "中国語",
+      ko: "韓国語",
+    },
+    // 旅行プランナー
+    travel: {
+      title: "AI旅行プランナー 🗺️",
+      planPlaceholder: "例：京都旅行",
+      departurePlaceholder: "出発場所（任意）",
+      dayTrip: "日帰り",
+      overnight: "宿泊",
+      nights: "泊数",
+      stayPlaceholder: "宿泊場所（任意）",
+      generate: "プラン生成",
+      generating: "生成中...",
+      mapLoading: "地図を読み込み中...",
+      inputError: "旅行内容と日付を入力してください",
+      nightsError: "宿泊日数を入力してください",
+      generalError: "エラーが発生しました",
+    },
+  },
+
+  en: {
+    nav: {
+      home: "Home",
+      about: "About",
+      contact: "Contact",
+      settings: "Settings",
+    },
+    common: {
+      loading: "Loading...",
+      error: "An error occurred",
+      save: "Save",
+      cancel: "Cancel",
+      confirm: "Confirm",
+      close: "Close",
+      search: "Search",
+      submit: "Submit",
+      back: "Back",
+      next: "Next",
+      yes: "Yes",
+      no: "No",
+    },
+    page: {
+      welcome: "Welcome",
+      description: "Please select a language",
+    },
+    language: {
+      label: "Language",
+      ja: "Japanese",
+      en: "English",
+      zh: "Chinese",
+      ko: "Korean",
+    },
+    travel: {
+      title: "AI Travel Planner 🗺️",
+      planPlaceholder: "e.g. Kyoto trip",
+      departurePlaceholder: "Departure location (optional)",
+      dayTrip: "Day trip",
+      overnight: "Overnight",
+      nights: "Nights",
+      stayPlaceholder: "Stay location (optional)",
+      generate: "Generate Plan",
+      generating: "Generating...",
+      mapLoading: "Loading map...",
+      inputError: "Please enter trip details and date",
+      nightsError: "Please enter number of nights",
+      generalError: "An error occurred",
+    },
+  },
+
+  zh: {
+    nav: {
+      home: "首页",
+      about: "关于",
+      contact: "联系我们",
+      settings: "设置",
+    },
+    common: {
+      loading: "加载中...",
+      error: "发生错误",
+      save: "保存",
+      cancel: "取消",
+      confirm: "确认",
+      close: "关闭",
+      search: "搜索",
+      submit: "提交",
+      back: "返回",
+      next: "下一步",
+      yes: "是",
+      no: "否",
+    },
+    page: {
+      welcome: "欢迎",
+      description: "请选择语言",
+    },
+    language: {
+      label: "语言",
+      ja: "日语",
+      en: "英语",
+      zh: "中文",
+      ko: "韩语",
+    },
+    travel: {
+      title: "AI旅行规划师 🗺️",
+      planPlaceholder: "例：京都旅行",
+      departurePlaceholder: "出发地点（可选）",
+      dayTrip: "当天往返",
+      overnight: "住宿",
+      nights: "晚数",
+      stayPlaceholder: "住宿地点（可选）",
+      generate: "生成计划",
+      generating: "生成中...",
+      mapLoading: "地图加载中...",
+      inputError: "请输入旅行内容和日期",
+      nightsError: "请输入住宿天数",
+      generalError: "发生错误",
+    },
+  },
+
+  ko: {
+    nav: {
+      home: "홈",
+      about: "소개",
+      contact: "문의",
+      settings: "설정",
+    },
+    common: {
+      loading: "로딩 중...",
+      error: "오류가 발생했습니다",
+      save: "저장",
+      cancel: "취소",
+      confirm: "확인",
+      close: "닫기",
+      search: "검색",
+      submit: "제출",
+      back: "뒤로",
+      next: "다음",
+      yes: "예",
+      no: "아니오",
+    },
+    page: {
+      welcome: "환영합니다",
+      description: "언어를 선택해 주세요",
+    },
+    language: {
+      label: "언어",
+      ja: "일본어",
+      en: "영어",
+      zh: "중국어",
+      ko: "한국어",
+    },
+    travel: {
+      title: "AI 여행 플래너 🗺️",
+      planPlaceholder: "예：교토 여행",
+      departurePlaceholder: "출발 장소（선택）",
+      dayTrip: "당일치기",
+      overnight: "숙박",
+      nights: "박수",
+      stayPlaceholder: "숙박 장소（선택）",
+      generate: "플랜 생성",
+      generating: "생성 중...",
+      mapLoading: "지도 로딩 중...",
+      inputError: "여행 내용과 날짜를 입력해 주세요",
+      nightsError: "숙박 일수를 입력해 주세요",
+      generalError: "오류가 발생했습니다",
+    },
+  },
+};
+
+export default translations;
