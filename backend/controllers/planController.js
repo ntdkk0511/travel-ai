@@ -1,7 +1,70 @@
-import PlanModel from "../models/PlanModel.js";
+// import PlanModel from "../models/PlanModel.js";
+
+// // プランを保存する
+// export const savePlan = (req, res) => {
+//   const { userId, title, plan, startDate, endDate, nights, stayLocation } = req.body;
+
+//   if (!userId || !plan || !startDate) {
+//     return res.status(400).json({ error: "必須項目が不足しています（userId, plan, startDate）" });
+//   }
+
+//   try {
+//     const newPlan = PlanModel.createPlan(
+//       userId,
+//       title || "無題のプラン",
+//       plan,
+//       startDate,
+//       endDate || startDate,
+//       nights || 0,
+//       stayLocation || ""
+//     );
+//     return res.status(201).json(newPlan);
+//   } catch (err) {
+//     console.error("プラン保存エラー:", err);
+//     return res.status(500).json({ error: "プランの保存に失敗しました" });
+//   }
+// };
+
+// // ユーザーのプラン一覧を取得する
+// export const getPlansByUser = (req, res) => {
+//   const { userId } = req.params;
+
+//   if (!userId) {
+//     return res.status(400).json({ error: "userIdが必要です" });
+//   }
+
+//   try {
+//     const plans = PlanModel.getPlansByUserId(userId);
+//     return res.json(plans);
+//   } catch (err) {
+//     console.error("プラン取得エラー:", err);
+//     return res.status(500).json({ error: "プランの取得に失敗しました" });
+//   }
+// };
+
+// // プランを削除する
+// export const deletePlan = (req, res) => {
+//   const { planId } = req.params;
+
+//   try {
+//     const target = PlanModel.getPlanById(planId);
+//     if (!target) {
+//       return res.status(404).json({ error: "プランが見つかりません" });
+//     }
+//     PlanModel.deletePlanById(planId);
+//     return res.json({ message: "削除しました" });
+//   } catch (err) {
+//     console.error("プラン削除エラー:", err);
+//     return res.status(500).json({ error: "削除に失敗しました" });
+//   }
+// };
+
+// database
+
+import Plan from "../models/PlanModel.js";
 
 // プランを保存する
-export const savePlan = (req, res) => {
+export const savePlan = async (req, res) => {
   const { userId, title, plan, startDate, endDate, nights, stayLocation } = req.body;
 
   if (!userId || !plan || !startDate) {
@@ -9,15 +72,15 @@ export const savePlan = (req, res) => {
   }
 
   try {
-    const newPlan = PlanModel.createPlan(
+    const newPlan = await Plan.create({
       userId,
-      title || "無題のプラン",
+      title: title || "無題のプラン",
       plan,
       startDate,
-      endDate || startDate,
-      nights || 0,
-      stayLocation || ""
-    );
+      endDate: endDate || startDate,
+      nights: nights || 0,
+      stayLocation: stayLocation || "",
+    });
     return res.status(201).json(newPlan);
   } catch (err) {
     console.error("プラン保存エラー:", err);
@@ -26,7 +89,7 @@ export const savePlan = (req, res) => {
 };
 
 // ユーザーのプラン一覧を取得する
-export const getPlansByUser = (req, res) => {
+export const getPlansByUser = async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -34,7 +97,7 @@ export const getPlansByUser = (req, res) => {
   }
 
   try {
-    const plans = PlanModel.getPlansByUserId(userId);
+    const plans = await Plan.find({ userId }).sort({ createdAt: -1 });
     return res.json(plans);
   } catch (err) {
     console.error("プラン取得エラー:", err);
@@ -43,15 +106,14 @@ export const getPlansByUser = (req, res) => {
 };
 
 // プランを削除する
-export const deletePlan = (req, res) => {
+export const deletePlan = async (req, res) => {
   const { planId } = req.params;
 
   try {
-    const target = PlanModel.getPlanById(planId);
+    const target = await Plan.findByIdAndDelete(planId);
     if (!target) {
       return res.status(404).json({ error: "プランが見つかりません" });
     }
-    PlanModel.deletePlanById(planId);
     return res.json({ message: "削除しました" });
   } catch (err) {
     console.error("プラン削除エラー:", err);
