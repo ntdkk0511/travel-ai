@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config(); // ← 一番最初に実行
 import cors from "cors";
 import express from "express";
-import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { addDays, parseISO, format } from "date-fns";
 import UserRoutes from "./routes/UserRoute.js";
@@ -9,17 +10,20 @@ import languageRouter from "./routes/language.js";
 //写真追加
 import photoRouter from "./routes/photoRoute.js";
 
-
 //URL下
 import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
+//データベース
+import connectDB from "./db.js";
 
 //プラン保存
 import planRouter from "./routes/planRoute.js";
 
-dotenv.config();
+
+
 
 const app = express();
-
+// ✅ 追加: MongoDB接続を実行
+connectDB();
 app.use(express.json());
 app.use(cors());
 
