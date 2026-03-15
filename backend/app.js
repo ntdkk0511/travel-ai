@@ -9,7 +9,6 @@ import languageRouter from "./routes/language.js";
 //写真追加
 import photoRouter from "./routes/photoRoute.js";
 
-
 //URL下
 import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
 
@@ -40,7 +39,8 @@ const LANG_INSTRUCTIONS = {
 };
 
 app.post("/generate", async (req, res) => {
-  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, lang = "ja" } = req.body;
+  // ホテル予算を追加
+  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, hotelBudget, lang = "ja" } = req.body;
 
   // 必須チェック
   if (!startDate || !stayType) {
@@ -61,6 +61,7 @@ app.post("/generate", async (req, res) => {
   if (stayType === "宿泊") {
     console.log(`宿泊日数: ${nights}`);
     if (stayLocation) console.log(`宿泊場所: ${stayLocation}`);
+    if (hotelBudget) console.log(`ホテル予算: ${hotelBudget}円`);
   }
 
   try {
@@ -81,6 +82,7 @@ app.post("/generate", async (req, res) => {
     if (stayType === "宿泊") {
       richPrompt += `Number of nights: ${nights}\n`;
       if (stayLocation) richPrompt += `Stay location: ${stayLocation} (optional)\n`;
+      if (hotelBudget) richPrompt += `Hotel budget per night: approximately ${hotelBudget} yen (optional, suggest hotels within this range)\n`; // ホテル予算
     }
     if (startLocation) richPrompt += `Departure location: ${startLocation} (optional)\n`;
     if (time) richPrompt += `Departure time: ${time} (optional)\n`;
