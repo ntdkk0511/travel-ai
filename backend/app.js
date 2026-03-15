@@ -63,9 +63,9 @@ app.post("/generate", async (req, res) => {
     // 言語指示（未知のコードは日本語にフォールバック）
     const langInstruction = LANG_INSTRUCTIONS[lang] ?? LANG_INSTRUCTIONS.ja;
 
-    // プロンプト作成（指示はすべて英語でGeminiに渡す＝日本語混入を防ぐ）
+    // プロンプト作成（JSONレスポンス形式）
     let richPrompt = `${langInstruction}\n\n`;
-    richPrompt += `Create a travel plan for: ${prompt}\n\n`;
+    richPrompt += `Create a travel plan for: ${prompt}\n`;
     richPrompt += `Trip start date: ${startDate}\n`;
     richPrompt += `Trip type: ${stayType}\n`;
     if (stayType === "宿泊") {
@@ -77,14 +77,32 @@ app.post("/generate", async (req, res) => {
     richPrompt += `Trip end date: ${finalEndDate}\n\n`;
     richPrompt += `[Conditions]\n`;
     richPrompt += `- Consider realistic travel times\n`;
-    richPrompt += `- Write a schedule by time\n`;
-    richPrompt += `- For overnight trips, consider the accommodation\n\n`;
-    richPrompt += `[Critical Rule - Route Data]\n`;
-    richPrompt += `At the very end of your response, add ONE line in this exact format:\n`;
-    richPrompt += `Locations: [place1, place2, place3]\n`;
-    richPrompt += `IMPORTANT: The place names inside Locations:[...] MUST be written in Japanese (e.g. 京都駅, 清水寺). This is required for the map API.\n\n`;
-    richPrompt += `[Language Rule - Highest Priority]\n`;
-    richPrompt += `${langInstruction} Apply this to all text EXCEPT the Locations:[...] line.`;
+    richPrompt += `- Write a time-based schedule\n`;
+    richPrompt += `- For overnight trips, consider accommodation\n\n`;
+    richPrompt += `[CRITICAL] Respond ONLY with a valid JSON object. No markdown, no code fences, no explanation outside the JSON.\n\n`;
+    richPrompt += `Required JSON format:\n`;
+    richPrompt += `{\n`;
+    richPrompt += `  "title": "trip title",\n`;
+    richPrompt += `  "summary": "one sentence summary",\n`;
+    richPrompt += `  "days": [\n`;
+    richPrompt += `    {\n`;
+    richPrompt += `      "day": 1,\n`;
+    richPrompt += `      "date": "YYYY-MM-DD",\n`;
+    richPrompt += `      "items": [\n`;
+    richPrompt += `        {\n`;
+    richPrompt += `          "time": "09:00",\n`;
+    richPrompt += `          "name": "place or activity name (in the response language)",\n`;
+    richPrompt += `          "desc": "short description (in the response language)",\n`;
+    richPrompt += `          "duration": "60min",\n`;
+    richPrompt += `          "category": "sightseeing|food|transport|stay",\n`;
+    richPrompt += `          "locationJa": "Japanese place name for map API e.g. 清水寺"\n`;
+    richPrompt += `        }\n`;
+    richPrompt += `      ]\n`;
+    richPrompt += `    }\n`;
+    richPrompt += `  ],\n`;
+    richPrompt += `  "locations": ["日本語地名1", "日本語地名2"]\n`;
+    richPrompt += `}\n\n`;
+    richPrompt += `[Language Rule] ${langInstruction} Apply to: title, summary, name, desc fields ONLY. locationJa MUST always be in Japanese.`;
 
     console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
     const result = await model.generateContent(richPrompt);
@@ -92,8 +110,19 @@ app.post("/generate", async (req, res) => {
     const text = response.text();
 
     console.log(">>> [完了] 生成に成功しました！");
+
+    // JSONパース（コードフェンスが混入した場合も除去）
+    const cleaned = text.replace(/```json|```/g, "").trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr.message);
+      return res.status(500).json({ error: "プランの解析に失敗しました。もう一度お試しください。" });
+    }
+
     res.json({
-      plan: text,
+      plan: parsed,
       startDate,
       endDate: finalEndDate,
       nights,
