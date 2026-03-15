@@ -96,8 +96,14 @@ function SkeletonCard() {
 function PlaceCard({ name, photoUrl, address }) {
     const [hovered, setHovered] = useState(false);
     const [imgError, setImgError] = useState(false);
-
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
     return (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none", color: "inherit" }}
+        >
         <div
             style={{ ...styles.card, ...(hovered ? styles.cardHover : {}) }}
             onMouseEnter={() => setHovered(true)}
@@ -115,6 +121,8 @@ function PlaceCard({ name, photoUrl, address }) {
                 {address && <p style={styles.address}>{address}</p>}
             </div>
         </div>
+
+        </a>
     );
 }
 

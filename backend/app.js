@@ -17,7 +17,8 @@ import connectDB from "./db.js";
 
 //プラン保存
 import planRouter from "./routes/planRoute.js";
-
+//掲示板機能
+import postRoutes from "./routes/postRoutes.js";
 
 //ホテル
 import hotelRouter from "./routes/hotelRoute.js";
@@ -44,6 +45,8 @@ app.use("/plans", planRouter);
 //ホテル
 app.use("/api/hotels", hotelRouter);
 
+//掲示板
+app.use("/posts", postRoutes);
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
