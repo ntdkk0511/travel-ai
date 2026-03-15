@@ -9,8 +9,9 @@ import PlanWithLinks from "./PlanWithLinks";
 //cat
 import LoadingCat from "./LoadingCat";
 
-// ホテル予算
+// 予算
 import HotelBudgetInput from "./components/HotelBudgetInput";
+import TripBudgetInput from "./components/TripBudgetInput";
 import { useHotelBudget } from "./components/useHotelBudget";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -39,8 +40,8 @@ function AppContent({ user, onLogout }) {
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]); // 写真データをここで管理
 
-  // ホテル予算
-  const { hotelBudget, setHotelBudget, getBudgetForRequest } = useHotelBudget();
+  // 予算
+  const { hotelBudget, setHotelBudget, totalBudget, setTotalBudget, getBudgetForRequest } = useHotelBudget();
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -100,8 +101,8 @@ function AppContent({ user, onLogout }) {
       if (stayType === "宿泊") {
         bodyData.nights = nights;
         if (stayLocation) bodyData.stayLocation = stayLocation;
-        Object.assign(bodyData, getBudgetForRequest()); // ホテル予算
       }
+      Object.assign(bodyData, getBudgetForRequest(stayType, nights)); // 予算（日帰り・宿泊共通）
 
       const res = await fetch("http://localhost:3000/generate", {
         method: "POST",
@@ -194,10 +195,13 @@ function AppContent({ user, onLogout }) {
               placeholder={t("travel.stayPlaceholder")}
               style={{ padding: "10px", flex: 1 }}
             />
-            {/* ホテル予算 */}
+            {/* ホテル予算（宿泊時のみ） */}
             <HotelBudgetInput budget={hotelBudget} setBudget={setHotelBudget} />
           </>
         )}
+
+        {/* 全体予算（日帰り・宿泊共通） */}
+        <TripBudgetInput totalBudget={totalBudget} setTotalBudget={setTotalBudget} />
 
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? t("travel.generating") : t("travel.generate")}

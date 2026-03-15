@@ -39,8 +39,8 @@ const LANG_INSTRUCTIONS = {
 };
 
 app.post("/generate", async (req, res) => {
-  // ホテル予算を追加
-  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, hotelBudget, lang = "ja" } = req.body;
+  // ホテル予算・全体予算を追加
+  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, hotelBudget, totalBudget, activityBudget, lang = "ja" } = req.body;
 
   // 必須チェック
   if (!startDate || !stayType) {
@@ -63,6 +63,8 @@ app.post("/generate", async (req, res) => {
     if (stayLocation) console.log(`宿泊場所: ${stayLocation}`);
     if (hotelBudget) console.log(`ホテル予算: ${hotelBudget}円`);
   }
+  if (totalBudget) console.log(`全体予算: ${totalBudget}円`);
+  if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -82,7 +84,13 @@ app.post("/generate", async (req, res) => {
     if (stayType === "宿泊") {
       richPrompt += `Number of nights: ${nights}\n`;
       if (stayLocation) richPrompt += `Stay location: ${stayLocation} (optional)\n`;
-      if (hotelBudget) richPrompt += `Hotel budget per night: approximately ${hotelBudget} yen (optional, suggest hotels within this range)\n`; // ホテル予算
+      if (hotelBudget) richPrompt += `Hotel budget per night: approximately ${hotelBudget} yen (optional, suggest hotels within this range)\n`;
+    }
+    if (totalBudget && activityBudget !== undefined) {
+      richPrompt += `Total trip budget: ${totalBudget} yen\n`;
+      richPrompt += `Activity & food budget (excluding hotel): approximately ${activityBudget} yen (suggest spots and meals within this range)\n`;
+    } else if (totalBudget) {
+      richPrompt += `Total trip budget: approximately ${totalBudget} yen (suggest spots and meals within this range)\n`;
     }
     if (startLocation) richPrompt += `Departure location: ${startLocation} (optional)\n`;
     if (time) richPrompt += `Departure time: ${time} (optional)\n`;
