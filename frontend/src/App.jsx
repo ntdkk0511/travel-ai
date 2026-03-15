@@ -7,7 +7,6 @@ import PhotoGallery from "./components/PhotoGallery";
 import PlanWithLinks from "./PlanWithLinks";
 import LoadingCat from "./LoadingCat";
 
-
 // 予算
 import HotelBudgetInput from "./components/HotelBudgetInput";
 import TripBudgetInput from "./components/TripBudgetInput";
@@ -55,7 +54,6 @@ function AppContent({ user, onLogout }) {
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]);
 
-=======
   //ホテル
   const [hotelLocation, setHotelLocation] = useState("");
   // ★ プラン保存フック（user.id を渡す）
