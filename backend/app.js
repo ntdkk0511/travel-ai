@@ -13,6 +13,9 @@ import photoRouter from "./routes/photoRoute.js";
 //URL下
 import urlEnrichRoutes from "./routes/urlEnrichRoute.js";
 
+//プラン保存
+import planRouter from "./routes/planRoute.js";
+
 dotenv.config();
 
 const app = express();
@@ -28,8 +31,12 @@ app.use("/api/photos", photoRouter);
 //URL下
 app.use("/url-enrich", urlEnrichRoutes);
 
+//プラン保存
+app.use("/plans", planRouter);
+
 // Gemini AIクライアント
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 
 // 言語コードを自然言語の指示文に変換
 const LANG_INSTRUCTIONS = {
