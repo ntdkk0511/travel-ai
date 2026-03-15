@@ -6,6 +6,9 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 import PhotoGallery from "./components/PhotoGallery";
 import PlanWithLinks from "./PlanWithLinks";
 
+//cat
+import LoadingCat from "./LoadingCat";
+
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const containerStyle = {
@@ -189,8 +192,10 @@ function AppContent({ user, onLogout }) {
         <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
           {loading ? t("travel.generating") : t("travel.generate")}
         </button>
+        
       </div>
-
+      {loading && <LoadingCat />}
+      
       {isLoaded ? (
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
           {directions && <DirectionsRenderer directions={directions} />}
