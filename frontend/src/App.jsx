@@ -146,8 +146,7 @@ function AppContent({ user, onLogout }) {
 
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
-          const parsed = match[1].split(",").map((s) => s.trim());
-          console.log(">>> [App] setLocations:", parsed);
+          const parsed = match[1].split(",").map((s) => s.trim().replace(/\*+/g, ""));
           setLocations(parsed);
         }
       } else {
@@ -192,7 +191,7 @@ function AppContent({ user, onLogout }) {
         calculateRoute(data.plan);
         const match = data.plan.match(/Locations:\s*\[(.*?)\]/);
         if (match) {
-          const parsed = match[1].split(",").map((s) => s.trim());
+          const parsed = match[1].split(",").map((s) => s.trim().replace(/\*+/g, ""));
           setLocations(parsed);   // ★ [] → parsed の変化でPhotoGalleryが再取得
         }
       } else {

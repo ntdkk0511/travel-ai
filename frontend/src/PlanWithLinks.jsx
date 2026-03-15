@@ -84,7 +84,7 @@ export default function PlanWithLinks({ result, locations, photos }) {
               ),
             }}
           >
-            {seg.text}
+            {seg.text.replace(/\\([*[\]()_~#`])/g, "$1")}
           </ReactMarkdown>
 
           {seg.photo && (

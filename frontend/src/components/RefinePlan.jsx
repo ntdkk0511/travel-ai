@@ -18,7 +18,6 @@ export default function RefinePlan({ onRefine, loading }) {
         padding: "16px",
         border: "1px solid #ddd",
         borderRadius: "10px",
-        backgroundColor: "#f9f9f9",
       }}
     >
       <p style={{ margin: "0 0 10px", fontWeight: "bold", fontSize: "14px" }}>

@@ -39,7 +39,7 @@ app.use("/api/photos", photoRouter);
 app.use("/url-enrich", urlEnrichRoutes);
 
 //プラン保存
-app.use("/plans", planRouter);
+app.use("/api/plans", planRouter);
 
 
 //追加のわがまま
