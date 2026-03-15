@@ -63,6 +63,5 @@ class UserModel{ // フォイルを指定する
         console.log("all users:", users);
         return users.find(user=> user.email === email);
     }
-
 }
 export default UserModel;
