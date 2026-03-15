@@ -121,7 +121,13 @@ function AppContent({user,onLogout}) {
   console.log("App user:", user);
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
-
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
+      {user && (
+        <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
+          ログアウト
+        </button>
+      )}
+    </header>
       <h1>{t("travel.title")}</h1>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
@@ -206,13 +212,13 @@ function AppContent({user,onLogout}) {
   );
 }
 
-export default function App() {
+export default function App({user,onLogout}) {
   return (
     <LanguageProvider>
       <header style={{ display: "flex", justifyContent: "flex-end", padding: "12px 16px" }}>
         <LanguageSwitcher />
       </header>
-      <AppContent />
+    <AppContent user={user} onLogout={onLogout} />
     </LanguageProvider>
   );
 }

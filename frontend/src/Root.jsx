@@ -10,7 +10,7 @@ export default function Root() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
+    if (!token|| token === "undefined") {
       setIsLoggedIn(false);
       return;
     }
@@ -19,9 +19,10 @@ export default function Root() {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {
-      // サーバーが返すユーザー情報を保持
-      console.log("check-token response:", res.data);
-      setUser(res.data.user || null);
+      const userData = res.data.user || null;
+      // 1. まずユーザー情報をセット
+      setUser(userData);
+      // 2. その後でログインフラグを立てる
       setIsLoggedIn(true);
     })
     .catch((err) => {
@@ -32,17 +33,30 @@ export default function Root() {
       setIsLoggedIn(false);
     });
   }, []);
+  // Root.jsx (Rendering部分)
+  if (isLoggedIn === null) return <div>Loading...</div>;
 
-  if (isLoggedIn === null) return <div>Loading...</div>; // 読み込み中表示
+  // isLoggedIn が true かつ user が存在する場合のみ App を出す
+  if (isLoggedIn && user) {
+    return (
+      <App
+        user={user}
+        onLogout={() => {
+          localStorage.removeItem("token");
+          setIsLoggedIn(false);
+          setUser(null);
+        }}
+      />
+    );
+  }
 
-  // return isLoggedIn && user? (
-  return isLoggedIn ?(
-    <App user={user} onLogout={() => {
-      localStorage.removeItem("token");
-      setIsLoggedIn(false);
-      setUser(null);
-    }} />
-  ) : (
-    <Test onLoginSuccess={() => setIsLoggedIn(true)} />
+  // それ以外（未ログイン）は Test (Login画面)
+  return (
+    <Test
+      onLoginSuccess={(userData) => { // 🔴 受け取ったデータを引数に取る
+        setUser(userData);            // 🔴 ユーザー情報をセット
+        setIsLoggedIn(true);          // 🔴 ログイン状態をセット
+      }}
+    />
   );
 }
