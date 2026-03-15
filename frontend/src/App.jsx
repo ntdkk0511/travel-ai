@@ -330,14 +330,6 @@ function AppContent({ user, onLogout }) {
       hotelLocation={hotelLocation}
       stayType={stayType}
       />
-      {/* ★ 保存ボタン（プランが生成されたときだけ表示） */}
-      <SavePlanButton
-        onSave={handleSave}
-        saving={saving}
-        saveSuccess={saveSuccess}
-        disabled={!result}
-      />
-
       <MyPlans
         plans={plans}
         loading={plansLoading}
