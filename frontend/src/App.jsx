@@ -12,7 +12,7 @@ const containerStyle = {
 };
 
 const center = { lat: 34.9858, lng: 135.7588 };
-export default function App() {
+export default function App({user,onLogout}) {
   const [plan, setPlan] = useState("");
   const [startLocation, setStartLocation] = useState("");
   const [time, setTime] = useState("");
@@ -111,10 +111,12 @@ export default function App() {
       setLoading(false);
     }
   };
-
+  console.log("App user:", user);
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
       <h1>AI旅行プランナー 🗺️</h1>
+      <h2>ようこそ {user?.name} さん</h2>
+      <button onClick={onLogout}>ログアウト</button>
 
       {/* ===== 1段目 ===== */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
@@ -142,7 +144,7 @@ export default function App() {
 
       {/* ===== 2段目 ===== */}
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
-        
+
         {/* 日帰り / 宿泊 */}
         <select
           value={stayType}

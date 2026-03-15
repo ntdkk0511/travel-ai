@@ -16,5 +16,17 @@
     "name": "shin",
     "email": "shin-yamamoto@copalette.app",
     "password": "ssss"
+  },
+  {
+    "id": "d793ce91-198d-4880-8f03-4333683929c9",
+    "name": "neko",
+    "email": "neko@mail.com",
+    "password": "1234neko"
+  },
+  {
+    "id": "9dd6b121-f5b7-4126-a78c-65dd9ce6b13c",
+    "name": "ai",
+    "email": "ai@gmail.com",
+    "password": "1234"
   }
 ]

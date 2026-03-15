@@ -17,7 +17,7 @@ class AuthService{
         console.log("ok");
         const secretKey = "my_secret_key"; // 本番では環境変数にする
         const token = jwt.sign(
-        { id: user.id, email: user.email }, // payload（必要最小限）
+        { id: user.id, email: user.email, name: user.name  }, // payload（必要最小限）
         secretKey,
         { expiresIn: "1h" }                // 有効期限 1時間
         );
@@ -26,6 +26,14 @@ class AuthService{
             token: token,
             user: user
         };
+    }
+    static verifyToken(token) {
+        try {
+            const decoded = jwt.verify(token, "my_secret_key");
+            return { id: decoded.id, email: decoded.email,name:decoded.name };
+        } catch (err) {
+            throw new Error("Invalid token");
+        }
     }
 }
 export default AuthService;

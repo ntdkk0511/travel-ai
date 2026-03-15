@@ -11,11 +11,13 @@ export default function LoginForm({ onLoginSuccess }) {
             const response = await axios.post("http://localhost:3000/auth/login", {
                 email, password
             });
-            console.log(response.data);
+            console.log("response.data:",response.data);
             localStorage.setItem("token", response.data.token);
-            onLoginSuccess?.();
+
+            // ← user を渡す
+            onLoginSuccess?.(response.data.user);
         } catch (error) {
-            console.error(error.response.data);
+            console.error(error.response?.data);
         }
     };
 
