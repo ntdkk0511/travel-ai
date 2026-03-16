@@ -25,6 +25,8 @@ import { usePlans } from "./hooks/usePlans";
 // ★ 追加要望
 import RefinePlan from "./components/RefinePlan";
 import { API_BASE } from "./api.js";
+//掲示板
+import Board from "./components/Board";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -53,7 +55,7 @@ function AppContent({ user, onLogout }) {
   const [refineLoading, setRefineLoading] = useState(false); // ★ 追加
   const [locations, setLocations] = useState([]);
   const [spotPhotos, setSpotPhotos] = useState([]);
-
+  const [tab, setTab] = useState("plan"); // ← useState の追加
   //ホテル
   const [hotelLocation, setHotelLocation] = useState("");
   // ★ プラン保存フック（user.id を渡す）
@@ -219,125 +221,156 @@ function AppContent({ user, onLogout }) {
     });
   };
 
+
+
   return (
-    <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
-        {user && (
-          <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
-            ログアウト
+  <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px" }}>
+      {user && (
+        <button onClick={onLogout} style={{ padding: "6px 12px", cursor: "pointer" }}>
+          ログアウト
+        </button>
+      )}
+    </header>
+
+    <h1>{t("travel.title")}</h1>
+
+    {/* タブボタン */}
+    <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      <button
+        onClick={() => setTab("plan")}
+        style={{
+          padding: "8px 20px",
+          backgroundColor: tab === "plan" ? "#1976d2" : "#f5f5f5",
+          color: tab === "plan" ? "white" : "black",
+          border: "none", borderRadius: "6px", cursor: "pointer"
+        }}
+      >
+        ✈️ プラン作成
+      </button>
+      <button
+        onClick={() => setTab("board")}
+        style={{
+          padding: "8px 20px",
+          backgroundColor: tab === "board" ? "#1976d2" : "#f5f5f5",
+          color: tab === "board" ? "white" : "black",
+          border: "none", borderRadius: "6px", cursor: "pointer"
+        }}
+      >
+        📋 掲示板
+      </button>
+    </div>
+
+    {/* プラン作成タブ */}
+    {tab === "plan" && (
+      <div>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input
+            value={plan}
+            onChange={(e) => setPlan(e.target.value)}
+            placeholder={t("travel.planPlaceholder")}
+            style={{ flex: 2, padding: "10px" }}
+          />
+          <input
+            value={startLocation}
+            onChange={(e) => setStartLocation(e.target.value)}
+            placeholder={t("travel.departurePlaceholder")}
+            style={{ flex: 1, padding: "10px" }}
+          />
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            style={{ padding: "10px" }}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
+          <select value={stayType} onChange={(e) => setStayType(e.target.value)} style={{ padding: "10px" }}>
+            <option value="日帰り">{t("travel.dayTrip")}</option>
+            <option value="宿泊">{t("travel.overnight")}</option>
+          </select>
+
+          <input
+            type="date"
+            value={startDate.toISOString().split("T")[0]}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={(e) => setStartDate(new Date(e.target.value))}
+            style={{ padding: "10px" }}
+          />
+
+          {stayType === "宿泊" && (
+            <>
+              <input
+                type="number"
+                value={nights}
+                min={1}
+                onChange={(e) => setNights(Number(e.target.value))}
+                placeholder={t("travel.nights")}
+                style={{ width: "80px", padding: "10px" }}
+              />
+              <input
+                value={stayLocation}
+                onChange={(e) => setStayLocation(e.target.value)}
+                placeholder={t("travel.stayPlaceholder")}
+                style={{ padding: "10px", flex: 1 }}
+              />
+              <HotelBudgetInput budget={hotelBudget} setBudget={setHotelBudget} />
+            </>
+          )}
+
+          <TripBudgetInput totalBudget={totalBudget} setTotalBudget={setTotalBudget} />
+
+          <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
+            {loading ? t("travel.generating") : t("travel.generate")}
           </button>
+        </div>
+
+        {loading && <LoadingCat />}
+
+        {isLoaded ? (
+          <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
+            {directions && <DirectionsRenderer directions={directions} />}
+          </GoogleMap>
+        ) : (
+          <div>{t("travel.mapLoading")}</div>
         )}
-      </header>
 
-      <h1>{t("travel.title")}</h1>
+        <hr />
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-        <input
-          value={plan}
-          onChange={(e) => setPlan(e.target.value)}
-          placeholder={t("travel.planPlaceholder")}
-          style={{ flex: 2, padding: "10px" }}
-        />
-        <input
-          value={startLocation}
-          onChange={(e) => setStartLocation(e.target.value)}
-          placeholder={t("travel.departurePlaceholder")}
-          style={{ flex: 1, padding: "10px" }}
-        />
-        <input
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          style={{ padding: "10px" }}
-        />
-      </div>
+        <PhotoGallery locations={locations} onPhotosLoaded={setSpotPhotos} />
+        <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
 
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
-        <select value={stayType} onChange={(e) => setStayType(e.target.value)} style={{ padding: "10px" }}>
-          <option value="日帰り">{t("travel.dayTrip")}</option>
-          <option value="宿泊">{t("travel.overnight")}</option>
-        </select>
-
-        <input
-          type="date"
-          value={startDate.toISOString().split("T")[0]}
-          min={new Date().toISOString().split("T")[0]}
-          onChange={(e) => setStartDate(new Date(e.target.value))}
-          style={{ padding: "10px" }}
-        />
-
-        {stayType === "宿泊" && (
+        {result && (
           <>
-            <input
-              type="number"
-              value={nights}
-              min={1}
-              onChange={(e) => setNights(Number(e.target.value))}
-              placeholder={t("travel.nights")}
-              style={{ width: "80px", padding: "10px" }}
+            {refineLoading && <LoadingCat />}
+            <RefinePlan onRefine={handleRefine} loading={refineLoading} />
+            <SavePlanButton
+              onSave={handleSave}
+              saving={saving}
+              saveSuccess={saveSuccess}
+              disabled={!result}
             />
-            <input
-              value={stayLocation}
-              onChange={(e) => setStayLocation(e.target.value)}
-              placeholder={t("travel.stayPlaceholder")}
-              style={{ padding: "10px", flex: 1 }}
-            />
-            {/* ホテル予算（宿泊時のみ） */}
-            <HotelBudgetInput budget={hotelBudget} setBudget={setHotelBudget} />
           </>
         )}
 
-        {/* 全体予算（日帰り・宿泊共通） */}
-        <TripBudgetInput totalBudget={totalBudget} setTotalBudget={setTotalBudget} />
+        <HotelList hotelLocation={hotelLocation} stayType={stayType} />
 
-        <button onClick={generatePlan} disabled={loading} style={{ padding: "10px 20px" }}>
-          {loading ? t("travel.generating") : t("travel.generate")}
-        </button>
+        <MyPlans
+          user={user}
+          plans={plans}
+          loading={plansLoading}
+          onFetch={fetchPlans}
+          onDelete={deletePlan}
+        />
       </div>
+    )}
 
-      {loading && <LoadingCat />}
-
-      {isLoaded ? (
-        <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
-          {directions && <DirectionsRenderer directions={directions} />}
-        </GoogleMap>
-      ) : (
-        <div>{t("travel.mapLoading")}</div>
-      )}
-
-      <hr />
-
-      <PhotoGallery locations={locations} onPhotosLoaded={setSpotPhotos} />
-
-      <PlanWithLinks result={result} locations={locations} photos={spotPhotos} />
-
-
-      {/* ★ プラン生成後にのみ表示 */}
-      {result && (
-        <>
-          {refineLoading && <LoadingCat />}
-          <RefinePlan onRefine={handleRefine} loading={refineLoading} />
-          <SavePlanButton
-            onSave={handleSave}
-            saving={saving}
-            saveSuccess={saveSuccess}
-            disabled={!result}
-          />
-        </>
-      )}
-
-      <HotelList
-      hotelLocation={hotelLocation}
-      stayType={stayType}
-      />
-      <MyPlans
-        user={user}
-        plans={plans}
-        loading={plansLoading}
-        onFetch={fetchPlans}
-        onDelete={deletePlan}
-      />
-    </div>
+    {/* 掲示板タブ */}
+    {tab === "board" && (
+      <Board user={user} />
+    )}
+  </div>
   );
 }
 
