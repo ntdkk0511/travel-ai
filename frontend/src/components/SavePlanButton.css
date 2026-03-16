@@ -1,0 +1,75 @@
+.spb-wrap {
+  width: 100%;
+}
+
+.spb-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, #9ab890 0%, #7aa870 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm, 10px);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 12px rgba(122, 168, 112, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.spb-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: 0.22s;
+}
+
+.spb-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(122, 168, 112, 0.4);
+}
+.spb-btn:hover::before { opacity: 1; }
+
+.spb-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.spb-btn:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.spb-btn--success {
+  background: linear-gradient(135deg, #7aa870 0%, #5a9050 100%);
+  box-shadow: 0 3px 12px rgba(90, 144, 80, 0.3);
+}
+
+.spb-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Loading spinner */
+.spb-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spb-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spb-spin {
+  to { transform: rotate(360deg); }
+}

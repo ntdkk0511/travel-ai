@@ -1,24 +1,31 @@
-// プラン生成結果の下に表示する保存ボタン
+import "./SavePlanButton.css";
 
 export default function SavePlanButton({ onSave, saving, saveSuccess, disabled }) {
-  if (disabled) return null; // プランがない時は非表示
+  if (disabled) return null;
 
   return (
-    <div style={{ marginTop: "12px" }}>
+    <div className="spb-wrap">
       <button
+        className={`spb-btn ${saveSuccess ? "spb-btn--success" : ""}`}
         onClick={onSave}
         disabled={saving || saveSuccess}
-        style={{
-          padding: "8px 20px",
-          backgroundColor: saveSuccess ? "#4caf50" : "#1976d2",
-          color: "#fff",
-          border: "none",
-          borderRadius: "6px",
-          cursor: saving || saveSuccess ? "default" : "pointer",
-          fontSize: "14px",
-        }}
       >
-        {saveSuccess ? "✅ 保存しました！" : saving ? "保存中..." : "📌 このプランを保存する"}
+        {saveSuccess ? (
+          <>
+            <span className="spb-icon">✓</span>
+            保存しました！
+          </>
+        ) : saving ? (
+          <>
+            <span className="spb-spinner" />
+            保存中…
+          </>
+        ) : (
+          <>
+            <span className="spb-icon">📌</span>
+            このプランを保存する
+          </>
+        )}
       </button>
     </div>
   );
