@@ -31,7 +31,13 @@ const app = express();
 // ✅ 追加: MongoDB接続を実行
 connectDB();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',                    // 開発用
+    'https://nekotabi.vercel.app',         // ← VercelのURLに変更
+  ],
+  credentials: true
+}));
 
 app.use("/auth", authRoutes);
 app.use("/users", UserRoutes);
@@ -167,9 +173,13 @@ res.json({
 });
 
 // サーバー起動
-app.listen(3000, () => {
+
+
+// ✅ こう変える（末尾のapp.listen全体を置き換え）
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
   console.log("-----------------------------------------");
-  console.log("Server running on http://localhost:3000");
+  console.log(`Server running on port ${PORT}`);
   console.log("Using Model: gemini-2.5-flash");
   console.log("-----------------------------------------");
 });
