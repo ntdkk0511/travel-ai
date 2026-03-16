@@ -30,7 +30,7 @@ import hotelRouter from "./routes/hotelRoute.js";
 const app = express();
 // ✅ 追加: MongoDB接続を実行
 connectDB();
-app.options('*', cors());
+app.options(/.*/, cors());
 app.use(express.json());
 app.use(cors({
   origin: [
