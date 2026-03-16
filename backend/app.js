@@ -36,7 +36,9 @@ app.use(cors({
     'http://localhost:5173',                    // 開発用
     'https://nekotabi.vercel.app',         // ← VercelのURLに変更
   ],
-  credentials: true
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // 許可するHTTPメソッド
+  allowedHeaders: 'Content-Type,Authorization',
 }));
 
 app.use("/auth", authRoutes);
