@@ -1,0 +1,33 @@
+/* ─── LogoutButton.css — ねこたびテーマ ─── */
+
+.lb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1.5px solid #e8d5b5;
+  border-radius: 8px;
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #aa9080;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lb-btn:hover {
+  background: #fff5f5;
+  border-color: #e07070;
+  color: #c05050;
+}
+
+.lb-btn:active {
+  transform: scale(0.97);
+}
+
+.lb-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
