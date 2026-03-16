@@ -1,5 +1,10 @@
-function LogoutButton({ onLogout }) {
-  return <button onClick={onLogout}>ログアウト</button>;
-}
+import "./LogoutButton.css";
 
-export default LogoutButton;
+export default function LogoutButton({ onLogout }) {
+  return (
+    <button className="lb-btn" onClick={onLogout}>
+      <span className="lb-icon">🚪</span>
+      ログアウト
+    </button>
+  );
+}
