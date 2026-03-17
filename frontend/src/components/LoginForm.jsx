@@ -105,11 +105,6 @@ export default function LoginForm({ onLoginSuccess }) {
         </button>
       </form>
 
-      {/* ── フッター ── */}
-      <p className="lf-footer-text">
-        アカウントをお持ちでない方は{" "}
-        <a className="lf-link" href="/signup">新規登録</a>
-      </p>
     </div>
   );
 }
