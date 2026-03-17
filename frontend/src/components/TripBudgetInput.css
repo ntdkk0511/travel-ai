@@ -1,0 +1,79 @@
+/* TripBudgetInput.css — ねこたびテーマ */
+
+.tbi-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.tbi-label {
+  white-space: nowrap;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary, #7a6050);
+  font-family: inherit;
+}
+
+.tbi-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tbi-input {
+  width: 110px;
+  padding: 9px 12px;
+  background: var(--cream-0, #fdf8f1);
+  border: 1.5px solid var(--cream-3, #e8d5b5);
+  border-radius: var(--radius-sm, 10px);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text-primary, #3a2a1a);
+  outline: none;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.tbi-input::-webkit-outer-spin-button,
+.tbi-input::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.tbi-input:focus {
+  border-color: var(--amber-1, #c8956c);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(200, 149, 108, 0.12);
+}
+
+.tbi-input::placeholder {
+  color: var(--text-light, #aa9080);
+  font-size: 0.8rem;
+}
+
+.tbi-currency {
+  font-size: 0.84rem;
+  color: var(--text-secondary, #7a6050);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* スマホ */
+@media (max-width: 560px) {
+  .tbi-wrap {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tbi-input-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+  .tbi-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
