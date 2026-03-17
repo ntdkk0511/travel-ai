@@ -257,7 +257,6 @@ function AppContent({ user, onLogout }) {
         </div>
 
         <div className="nk-header-right">
-          <LanguageSwitcher />
           {user ? (
             <div className="nk-user-area">
               <button className="nk-btn-ghost" onClick={() => setShowMyPlans(!showMyPlans)}>
@@ -272,6 +271,7 @@ function AppContent({ user, onLogout }) {
               {t("travel.login") || "ログイン"}
             </button>
           )}
+          <LanguageSwitcher />
         </div>
       </header>
 
@@ -282,13 +282,13 @@ function AppContent({ user, onLogout }) {
             className={`nk-tab ${activeSearchTab === "free" ? "nk-tab--active" : ""}`}
             onClick={() => setActiveSearchTab("free")}
           >
-            🐾 自由検索
+            🐾 {t("travel.searchFree") || "自由検索"}
           </button>
           <button
             className={`nk-tab ${activeSearchTab === "condition" ? "nk-tab--active" : ""}`}
             onClick={() => setActiveSearchTab("condition")}
           >
-            🗺 条件検索
+            🗺 {t("travel.searchCondition") || "条件検索"}
           </button>
         </div>
 
@@ -389,10 +389,10 @@ function AppContent({ user, onLogout }) {
                   <span className="nk-dot" />
                   <span className="nk-dot" />
                   <span className="nk-dot" />
-                  考え中にゃ…
+                  {t("travel.generating") || "考え中にゃ…"}
                 </span>
               ) : (
-                <>🐱 プランを作る</>
+                <>🐱 {t("travel.generate") || "プランを作る"}</>
               )}
             </button>
           </div>
@@ -406,7 +406,7 @@ function AppContent({ user, onLogout }) {
           <div className="nk-map-col">
             <div className="nk-panel-header">
               <span className="nk-panel-icon">🗺</span>
-              <span className="nk-panel-title">ルート</span>
+              <span className="nk-panel-title">{t("travel.routeLabel") || "ルート"}</span>
             </div>
             <div className="nk-map-container">
               {loading && (
@@ -446,7 +446,7 @@ function AppContent({ user, onLogout }) {
           <div className="nk-timetable-col">
             <div className="nk-panel-header">
               <span className="nk-panel-icon">📋</span>
-              <span className="nk-panel-title">タイムスケジュール</span>
+              <span className="nk-panel-title">{t("travel.scheduleLabel") || "タイムスケジュール"}</span>
               {endDate && <span className="nk-panel-sub">{startDate.toISOString().split("T")[0]} → {endDate}</span>}
             </div>
 
@@ -454,7 +454,7 @@ function AppContent({ user, onLogout }) {
               {(loading || refineLoading) && (
                 <div className="nk-timetable-loading">
                   <LoadingCat />
-                  <p className="nk-loading-msg">ベストなルートを計算中にゃ…</p>
+                  <p className="nk-loading-msg">{t("travel.calculatingRoute") || "ベストなルートを計算中にゃ…"}</p>
                 </div>
               )}
 
@@ -504,11 +504,11 @@ function AppContent({ user, onLogout }) {
       {!loading && !hasPlan && (
         <div className="nk-empty">
           <div className="nk-empty-cat">🐈</div>
-          <p className="nk-empty-text">行きたい場所や気分を入力して、<br />旅のプランを作ってみよう</p>
+          <p className="nk-empty-text">{t("travel.emptyText") || "行きたい場所や気分を入力して、旅のプランを作ってみよう"}</p>
           <div className="nk-empty-hints">
-            <span className="nk-hint">"京都で朝ごはんから始まる半日旅"</span>
-            <span className="nk-hint">"大阪で食べ歩き＆夜景"</span>
-            <span className="nk-hint">"静かな温泉宿でのんびり2泊"</span>
+            <span className="nk-hint">{t("travel.hint1") || '"京都で朝ごはんから始まる半日旅"'}</span>
+            <span className="nk-hint">{t("travel.hint2") || '"大阪で食べ歩き＆夜景"'}</span>
+            <span className="nk-hint">{t("travel.hint3") || '"静かな温泉宿でのんびり2泊"'}</span>
           </div>
         </div>
       )}

@@ -7,25 +7,33 @@
  * Props:
  *   totalBudget    : string
  *   setTotalBudget : (v: string) => void
- *   currency       : string — 省略時 "円"
+ *   currency       : string — 省略時は翻訳から取得
  */
 
-export default function TripBudgetInput({ totalBudget, setTotalBudget, currency = "円" }) {
-    return (
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <label style={{ whiteSpace: "nowrap", fontSize: "14px" }}>
-                💰 全体予算（任意）
-            </label>
-            <input
-                type="number"
-                min={0}
-                step={1000}
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(e.target.value)}
-                placeholder="例: 50000"
-                style={{ width: "110px", padding: "10px" }}
-            />
-            <span style={{ fontSize: "14px" }}>{currency}</span>
-        </div>
-    );
+import { useLanguage } from "../contexts/LanguageContext";
+import "./TripBudgetInput.css";
+
+export default function TripBudgetInput({ totalBudget, setTotalBudget, currency }) {
+  const { t } = useLanguage();
+  const currencyLabel = currency || t("travel.currencyJP") || "円";
+
+  return (
+    <div className="tbi-wrap">
+      <label className="tbi-label">
+        💰 {t("travel.totalBudgetLabel") || "全体予算（任意）"}
+      </label>
+      <div className="tbi-input-wrap">
+        <input
+          className="tbi-input"
+          type="number"
+          min={0}
+          step={1000}
+          value={totalBudget}
+          onChange={(e) => setTotalBudget(e.target.value)}
+          placeholder="50000"
+        />
+        <span className="tbi-currency">{currencyLabel}</span>
+      </div>
+    </div>
+  );
 }
