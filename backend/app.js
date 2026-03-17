@@ -30,14 +30,16 @@ import hotelRouter from "./routes/hotelRoute.js";
 const app = express();
 // ✅ 追加: MongoDB接続を実行
 connectDB();
-app.use(express.json());
 app.use(cors({
   origin: [
-    'http://localhost:5173',                    // 開発用
-    'https://nekotabi.vercel.app',         // ← VercelのURLに変更
+    'http://localhost:5173',
+    'https://nekotabi.vercel.app',
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/users", UserRoutes);
