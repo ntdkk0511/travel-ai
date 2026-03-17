@@ -1,0 +1,38 @@
+/* test.css — ねこたび 認証画面 */
+
+.auth-scene {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fdf8f1;
+  padding: 24px 16px;
+}
+
+.auth-toggle-text {
+  margin-top: 16px;
+  font-size: 0.82rem;
+  color: #aa9080;
+  font-weight: 300;
+  text-align: center;
+}
+
+.auth-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #c8956c;
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 0;
+  border-bottom: 1px dashed #c8956c;
+  transition: 0.18s;
+}
+
+.auth-toggle-btn:hover {
+  color: #b07850;
+  border-color: #b07850;
+}
