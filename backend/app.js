@@ -28,14 +28,15 @@ import refinePlanRouter from "./routes/refinePlanRoute.js";
 import hotelRouter from "./routes/hotelRoute.js";
 
 const app = express();
-// ✅ 追加: MongoDB接続を実行
+
+// ✅ MongoDB接続
 connectDB();
 
 // CORS設定（express.jsonより前に配置）
 const corsOptions = {
   origin: [
-    'http://localhost:5173',                    // 開発用
-    'https://nekotabi.vercel.app',              // 本番（Vercel）
+    'http://localhost:5173',       // 開発用
+    'https://nekotabi.vercel.app', // 本番（Vercel）
   ],
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -49,25 +50,14 @@ app.use("/auth", authRoutes);
 app.use("/users", UserRoutes);
 app.use("/api/language", languageRouter);
 app.use("/api/photos", photoRouter);
-
-//URL下
 app.use("/url-enrich", urlEnrichRoutes);
-
-//プラン保存
 app.use("/api/plans", planRouter);
-
-
-//追加のわがまま
 app.use("/refine-plan", refinePlanRouter);
-
-//ホテル
 app.use("/api/hotels", hotelRouter);
+app.use("/api/posts", postRoutes);
 
 // Gemini AIクライアント
 export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-app.use("/api/posts", postRoutes)
-
 
 // 言語コードを自然言語の指示文に変換
 const LANG_INSTRUCTIONS = {
@@ -78,8 +68,19 @@ const LANG_INSTRUCTIONS = {
 };
 
 app.post("/generate", async (req, res) => {
-  // ホテル予算・全体予算を追加
-  const { prompt, startDate, stayType, nights = 0, time, startLocation, stayLocation, hotelBudget, totalBudget, activityBudget, lang = "ja" } = req.body;
+  const {
+    prompt,
+    startDate,
+    stayType,
+    nights = 0,
+    time,
+    startLocation,
+    stayLocation,
+    hotelBudget,
+    totalBudget,
+    activityBudget,
+    lang = "ja",
+  } = req.body;
 
   // 必須チェック
   if (!startDate || !stayType) {
@@ -106,16 +107,16 @@ app.post("/generate", async (req, res) => {
   if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // ✅ 修正: gemini-2.0-flash（安定・高速）
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const finalEndDate = stayType === "日帰り"
-      ? startDate
-      : format(addDays(parseISO(startDate), nights), "yyyy-MM-dd");
+    const finalEndDate =
+      stayType === "日帰り"
+        ? startDate
+        : format(addDays(parseISO(startDate), nights), "yyyy-MM-dd");
 
-    // 言語指示（未知のコードは日本語にフォールバック）
     const langInstruction = LANG_INSTRUCTIONS[lang] ?? LANG_INSTRUCTIONS.ja;
 
-    // プロンプト作成（指示はすべて英語でGeminiに渡す＝日本語混入を防ぐ）
     let richPrompt = `${langInstruction}\n\n`;
     richPrompt += `Create a travel plan for: ${prompt}\n\n`;
     richPrompt += `Trip start date: ${startDate}\n`;
@@ -145,7 +146,7 @@ app.post("/generate", async (req, res) => {
     richPrompt += `[Language Rule - Highest Priority]\n`;
     richPrompt += `${langInstruction} Apply this to all text EXCEPT the Locations:[...] line.`;
 
-    console.log(">>> [通信中] Gemini 2.5 APIに接続しています...");
+    console.log(">>> [通信中] Gemini APIに接続しています...");
     const result = await model.generateContent(richPrompt);
     const response = await result.response;
     const text = response.text();
@@ -153,40 +154,39 @@ app.post("/generate", async (req, res) => {
     console.log(">>> [完了] 生成に成功しました！");
 
     const hotelLocationMatch = text.match(/宿泊[場所施設]*[：:]\s*([^\n。、]+)/);
-const extractedHotelLocation =
-  stayLocation ||
-  (hotelLocationMatch ? hotelLocationMatch[1].trim() : null) ||
-  prompt;
+    const extractedHotelLocation =
+      stayLocation ||
+      (hotelLocationMatch ? hotelLocationMatch[1].trim() : null) ||
+      prompt;
 
-res.json({
-  plan: text,
-  startDate,
-  endDate: finalEndDate,
-  nights,
-  stayLocation: stayLocation || "",
-  hotelLocation: extractedHotelLocation
-});
+    res.json({
+      plan: text,
+      startDate,
+      endDate: finalEndDate,
+      nights,
+      stayLocation: stayLocation || "",
+      hotelLocation: extractedHotelLocation,
+    });
   } catch (err) {
     console.error("--- [エラー発生] ---");
     console.error("Status:", err.status);
     console.error("Message:", err.message);
 
-    if (err.status === 404) return res.status(404).json({ error: "指定したモデルが見つかりません。" });
-    if (err.message && err.message.includes("429")) return res.status(429).json({ error: "制限を超えました。少し待ってください。" });
+    if (err.status === 404)
+      return res.status(404).json({ error: "指定したモデルが見つかりません。" });
+    if (err.message && err.message.includes("429"))
+      return res.status(429).json({ error: "制限を超えました。少し待ってください。" });
 
     res.status(500).json({ error: "サーバー内部エラー" });
   }
 });
 
-// サーバー起動
-
-
-// ✅ こう変える（末尾のapp.listen全体を置き換え）
+// ✅ サーバー起動
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("-----------------------------------------");
   console.log(`Server running on port ${PORT}`);
-  console.log("Using Model: gemini-2.5-flash");
+  console.log("Using Model: gemini-2.0-flash");
   console.log("-----------------------------------------");
 });
 
