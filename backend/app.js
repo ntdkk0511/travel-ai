@@ -34,10 +34,7 @@ connectDB();
 
 // CORS設定（express.jsonより前に配置）
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',       // 開発用
-    'https://nekotabi.vercel.app', // 本番（Vercel）
-  ],
+  origin: true, // 全オリジン許可（Vercelプレビューも含む）
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
