@@ -104,8 +104,7 @@ app.post("/generate", async (req, res) => {
   if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
-    // ✅ 修正: gemini-2.0-flash（安定・高速）
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const finalEndDate =
       stayType === "日帰り"
@@ -183,7 +182,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("-----------------------------------------");
   console.log(`Server running on port ${PORT}`);
-  console.log("Using Model: gemini-2.0-flash");
+  console.log("Using Model: gemini-2.0-flash-lite");
   console.log("-----------------------------------------");
 });
 
