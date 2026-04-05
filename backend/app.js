@@ -104,7 +104,7 @@ app.post("/generate", async (req, res) => {
   if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.0-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const finalEndDate =
       stayType === "日帰り"
