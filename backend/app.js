@@ -104,7 +104,7 @@ app.post("/generate", async (req, res) => {
   if (activityBudget !== undefined) console.log(`観光・食費予算: ${activityBudget}円`);
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-001" });
 
     const finalEndDate =
       stayType === "日帰り"
@@ -182,7 +182,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("-----------------------------------------");
   console.log(`Server running on port ${PORT}`);
-  console.log("Using Model: gemini-3.0-flash-lite");
+  console.log("Using Model: ");
   console.log("-----------------------------------------");
 });
 
